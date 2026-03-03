@@ -102,7 +102,8 @@ LOG_MAX_BYTES=10485760
 LOG_BACKUP_COUNT=10
 
 DB_ENABLED=true
-DB_SERVER=10.71.202.120\\user
+DB_SERVER=10.71.202.120
+DB_PORT=1433
 DB_DRIVER=ODBC Driver 18 for SQL Server
 DB_DATABASE=db
 DB_USER=userdb
@@ -118,6 +119,7 @@ Importante:
 - Tratar o arquivo `Documentação bases Jira.docx` como sensível, pois contém segredos em texto.
 - Com `CLEAN_OUTPUT_ON_API_RUN=true`, os diretórios `output/raw/<base>`, `output/processed/<base>` e `output/fallback/<base>` são limpos antes de cada execução `api-first`.
 - Com `DB_ENABLED=true` e variáveis `DB_*` válidas, os dados de cada base também são carregados no SQL Server.
+- Para evitar timeout de login no SQL Server, use `DB_SERVER` como host/IP (sem `\\instancia`) e informe `DB_PORT` explicitamente.
 
 ---
 
@@ -242,7 +244,7 @@ Registrar por base:
 
 ### 7.9 Carga SQL Server
 Após persistir os arquivos em `output/processed`, a aplicação:
-1. Conecta no SQL Server via `DB_SERVER/DB_DRIVER/DB_DATABASE/DB_USER/DB_PASSWORD`.
+1. Conecta no SQL Server via `DB_SERVER/DB_PORT/DB_DRIVER/DB_DATABASE/DB_USER/DB_PASSWORD`.
 2. Cria automaticamente as tabelas (se não existirem):
    - `dbo.jira_encerradas`
    - `dbo.jira_analisadas`

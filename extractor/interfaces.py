@@ -77,6 +77,9 @@ class ExtractorService(Protocol):
 class DatabaseWriter(Protocol):
     """Abstraction for writing processed records into relational storage."""
 
+    def check_connection(self) -> None:
+        """Raise if database connectivity is not healthy."""
+
     def upsert_records(
         self,
         *,

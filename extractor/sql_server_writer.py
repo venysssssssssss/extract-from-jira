@@ -21,6 +21,7 @@ class SqlServerWriter:
         self,
         *,
         server: str,
+        port: int | None,
         driver: str,
         database: str,
         user: str,
@@ -31,6 +32,7 @@ class SqlServerWriter:
         connect_timeout: int = 30,
     ) -> None:
         self._server = server
+        self._port = port
         self._driver = driver
         self._database = database
         self._user = user
@@ -54,9 +56,15 @@ class SqlServerWriter:
     def _connection_string(self) -> str:
         encrypt = "yes" if self._encrypt else "no"
         trust = "yes" if self._trust_server_certificate else "no"
+        server = self._server
+        if self._port:
+            # When a TCP port is explicit, resolve SERVER as host,port.
+            # This avoids named-instance resolution via SQL Browser.
+            host = self._server.split("\\", maxsplit=1)[0]
+            server = f"{host},{self._port}"
         return (
             f"DRIVER={{{self._driver}}};"
-            f"SERVER={self._server};"
+            f"SERVER={server};"
             f"DATABASE={self._database};"
             f"UID={self._user};"
             f"PWD={self._password};"
@@ -64,6 +72,30 @@ class SqlServerWriter:
             f"TrustServerCertificate={trust};"
             f"Connection Timeout={self._connect_timeout};"
         )
+
+    def check_connection(self) -> None:
+        """Fail fast if database is unreachable before extraction starts."""
+
+        try:
+            import pyodbc
+        except Exception as exc:
+            raise DatabaseWriteError(
+                "pyodbc is required to write data into SQL Server. Install it and retry."
+            ) from exc
+
+        try:
+            with pyodbc.connect(self._connection_string(), autocommit=True) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT 1")
+                _ = cursor.fetchone()
+        except Exception as exc:
+            hint = ""
+            if "\\" in self._server and not self._port:
+                hint = (
+                    " Hint: DB_SERVER uses named instance; set DB_PORT with the SQL Server TCP port "
+                    "and keep DB_SERVER as host/IP only."
+                )
+            raise DatabaseWriteError(f"Database connection check failed: {exc}.{hint}") from exc
 
     @staticmethod
     def _to_datetime(value: Any) -> datetime | None:
@@ -232,4 +264,3 @@ INSERT INTO {table} (
             to_date,
         )
         return {"table": table, "inserted_rows": len(rows), "period_count": period_count}
-

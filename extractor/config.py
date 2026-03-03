@@ -17,7 +17,10 @@ class Settings(BaseSettings):
     """Typed settings loaded from environment variables or `.env`."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        str_strip_whitespace=True,
     )
 
     jira_base_url: str = Field(validation_alias="JIRA_BASE_URL")
@@ -49,6 +52,7 @@ class Settings(BaseSettings):
     log_max_bytes: int = Field(default=10_485_760, validation_alias="LOG_MAX_BYTES")
     log_backup_count: int = Field(default=10, validation_alias="LOG_BACKUP_COUNT")
     db_server: str | None = Field(default=None, validation_alias="DB_SERVER")
+    db_port: int | None = Field(default=None, validation_alias="DB_PORT")
     db_driver: str | None = Field(default=None, validation_alias="DB_DRIVER")
     db_database: str | None = Field(default=None, validation_alias="DB_DATABASE")
     db_user: str | None = Field(default=None, validation_alias="DB_USER")

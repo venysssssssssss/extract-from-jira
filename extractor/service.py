@@ -81,6 +81,9 @@ class ExtractionService:
             window.to_date,
             formats,
         )
+        if self._database_writer is not None:
+            self._database_writer.check_connection()
+            LOGGER.info("db_connection_check_ok run_id=%s", run_id)
 
         if mode == "api-first" and self._clean_output_on_api_run:
             self._cleanup_output_for_bases(bases)

@@ -78,6 +78,10 @@ class FakeFallbackGateway:
 class FakeDatabaseWriter:
     def __init__(self) -> None:
         self.calls: list[dict] = []
+        self.preflight_called = 0
+
+    def check_connection(self) -> None:
+        self.preflight_called += 1
 
     def upsert_records(self, *, base, from_date, to_date, records):
         self.calls.append(
@@ -191,6 +195,7 @@ def test_service_writes_records_to_database(tmp_path: Path) -> None:
 
     assert len(results) == 1
     assert len(db_writer.calls) == 1
+    assert db_writer.preflight_called == 1
     assert db_writer.calls[0]["base"] == "encerradas"
     assert db_writer.calls[0]["from_date"] == "2026-02-02"
     assert db_writer.calls[0]["to_date"] == "2026-03-02"

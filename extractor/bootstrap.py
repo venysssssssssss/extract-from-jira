@@ -39,6 +39,7 @@ def build_service(settings: Settings | None = None) -> ExtractionService:
     if cfg.db_enabled and cfg.database_configured:
         db_writer = SqlServerWriter(
             server=cfg.db_server or "",
+            port=cfg.db_port,
             driver=cfg.db_driver or "",
             database=cfg.db_database or "",
             user=cfg.db_user or "",
