@@ -63,7 +63,8 @@ Decisões fixas deste projeto:
 ---
 
 ## 4) Pré-Requisitos
-- Python `3.11+`
+- Python `3.11` até `3.13` (recomendado `3.13`)
+- Poetry `2.2+`
 - Acesso ao Jira Cloud com permissão de leitura nos filtros/boards envolvidos
 - Credenciais Jira (`email` + `api_token`)
 - Dependências Python esperadas:
@@ -74,7 +75,7 @@ Decisões fixas deste projeto:
   - `tenacity` (ou retry equivalente)
   - `playwright` (fallback)
 - Para Playwright:
-  - `python -m playwright install`
+  - `poetry run playwright install`
 
 ---
 
@@ -104,7 +105,7 @@ Importante:
 CLI proposta:
 
 ```bash
-python -m extractor.run \
+poetry run extractor-run \
   --base all|encerradas|analisadas|ingressadas \
   --from YYYY-MM-DD \
   --to YYYY-MM-DD \
@@ -121,10 +122,10 @@ Exemplos:
 
 ```bash
 # Janela padrão (D-30..D-1), todas as bases
-python -m extractor.run --base all --mode api-first --format csv,parquet
+poetry run extractor-run --base all --mode api-first --format csv,parquet
 
 # Janela explícita
-python -m extractor.run --base analisadas --from 2026-02-01 --to 2026-03-02 --mode api-first
+poetry run extractor-run --base analisadas --from 2026-02-01 --to 2026-03-02 --mode api-first
 ```
 
 ---
@@ -312,7 +313,7 @@ output/
 Executar todos os dias às 06:10 (timezone do servidor):
 
 ```cron
-10 6 * * * cd /caminho/projeto && python -m extractor.run --base all --mode api-first --format csv,parquet >> output/logs/cron.log 2>&1
+10 6 * * * cd /caminho/projeto && poetry run extractor-run --base all --mode api-first --format csv,parquet >> output/logs/cron.log 2>&1
 ```
 
 ### 11.3 Observabilidade
@@ -427,9 +428,7 @@ docker-compose.yml
 Instalação:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
+poetry install --with dev
 ```
 
 Preparar ambiente:
@@ -441,13 +440,13 @@ cp .env.example .env
 Executar via CLI:
 
 ```bash
-python -m extractor.run --base all --mode api-first --format csv,parquet
+poetry run extractor-run --base all --mode api-first --format csv,parquet
 ```
 
 Executar API FastAPI:
 
 ```bash
-uvicorn api.main:app --host 0.0.0.0 --port 8000
+poetry run extractor-api
 ```
 
 Endpoints:
@@ -472,7 +471,7 @@ curl -X POST 'http://localhost:8000/v1/extractions/run' \
 Executar:
 
 ```bash
-python -m pytest
+poetry run pytest
 ```
 
 Cobertura atual:
