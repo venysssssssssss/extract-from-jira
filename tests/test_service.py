@@ -100,7 +100,9 @@ def test_service_runs_fallback_when_api_fails(tmp_path: Path) -> None:
     assert len(results) == 1
     assert results[0].source_mode.value == "playwright_fallback"
     assert results[0].total_records == 1
-    assert (tmp_path / "processed" / "analisadas" / "2026-03-01.csv").exists()
+    assert (
+        tmp_path / "processed" / "analisadas" / "2026-02-01__2026-03-01.csv"
+    ).exists()
 
 
 def test_service_cleans_base_output_before_api_run(tmp_path: Path) -> None:

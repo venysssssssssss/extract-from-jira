@@ -12,6 +12,8 @@ class FakeService:
                 base=BaseName.ENCERRADAS,
                 source_mode=SourceMode.API,
                 total_records=10,
+                from_date=datetime(2026, 2, 2, 0, 0, tzinfo=UTC).date(),
+                to_date=datetime(2026, 3, 2, 0, 0, tzinfo=UTC).date(),
                 raw_path="output/raw/encerradas/2026-03-01.jsonl",
                 csv_path="output/processed/encerradas/2026-03-01.csv",
                 parquet_path="output/processed/encerradas/2026-03-01.parquet",
@@ -28,3 +30,5 @@ def test_run_extraction_endpoint(monkeypatch):
 
     assert payload.results[0].base == "encerradas"
     assert payload.results[0].source_mode == "api"
+    assert payload.results[0].from_date.isoformat() == "2026-02-02"
+    assert payload.results[0].to_date.isoformat() == "2026-03-02"

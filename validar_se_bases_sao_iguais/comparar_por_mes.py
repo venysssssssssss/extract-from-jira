@@ -175,9 +175,14 @@ def _month_token(value: date | None) -> str | None:
 def _select_csv_file(base_cfg: BaseConfig, run_date: str | None) -> Path:
     if run_date:
         selected = base_cfg.csv_dir / f"{run_date}.csv"
-        if not selected.exists():
-            raise FileNotFoundError(f"CSV not found for {base_cfg.base}: {selected}")
-        return selected
+        if selected.exists():
+            return selected
+        period_named = sorted(base_cfg.csv_dir.glob(f"*__{run_date}.csv"))
+        if period_named:
+            return period_named[-1]
+        raise FileNotFoundError(
+            f"CSV not found for {base_cfg.base}: {selected} or *__{run_date}.csv"
+        )
 
     files = sorted(base_cfg.csv_dir.glob("*.csv"))
     if not files:

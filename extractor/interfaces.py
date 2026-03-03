@@ -34,14 +34,19 @@ class StorageGateway(Protocol):
     """Abstraction for data persistence."""
 
     def persist_raw(
-        self, base: BaseName, run_date: date, issues: list[dict[str, Any]]
+        self,
+        base: BaseName,
+        from_date: date,
+        to_date: date,
+        issues: list[dict[str, Any]],
     ) -> Path | None:
         """Persist raw issue payloads and return location."""
 
     def persist_processed(
         self,
         base: BaseName,
-        run_date: date,
+        from_date: date,
+        to_date: date,
         records: list[dict[str, Any]],
         formats: tuple[str, ...],
     ) -> dict[str, Path]:

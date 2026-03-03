@@ -192,12 +192,13 @@ Processo:
 5. Repetir até `startAt >= total`
 
 ### 7.5 Persistência
-Para cada base e data de execução (`run_date`):
+Para cada base e período de execução (`from_date`..`to_date`):
 - Bruto:
-  - `raw/<base>/<run_date>.jsonl`
+  - `raw/<base>/<from_date>__<to_date>.jsonl`
 - Normalizado:
-  - `processed/<base>/<run_date>.csv`
-  - `processed/<base>/<run_date>.parquet`
+  - `processed/<base>/<from_date>__<to_date>.csv`
+  - `processed/<base>/<from_date>__<to_date>.parquet`
+  - `processed/<base>/periodo_<from_date>__<to_date>.json`
 
 ### 7.6 Idempotência
 Chave técnica recomendada:
@@ -285,21 +286,24 @@ Regras de tipo:
 output/
   raw/
     encerradas/
-      2026-03-03.jsonl
+      2026-02-02__2026-03-02.jsonl
     analisadas/
-      2026-03-03.jsonl
+      2026-02-02__2026-03-02.jsonl
     ingressadas/
-      2026-03-03.jsonl
+      2026-02-02__2026-03-02.jsonl
   processed/
     encerradas/
-      2026-03-03.csv
-      2026-03-03.parquet
+      2026-02-02__2026-03-02.csv
+      2026-02-02__2026-03-02.parquet
+      periodo_2026-02-02__2026-03-02.json
     analisadas/
-      2026-03-03.csv
-      2026-03-03.parquet
+      2026-02-02__2026-03-02.csv
+      2026-02-02__2026-03-02.parquet
+      periodo_2026-02-02__2026-03-02.json
     ingressadas/
-      2026-03-03.csv
-      2026-03-03.parquet
+      2026-02-02__2026-03-02.csv
+      2026-02-02__2026-03-02.parquet
+      periodo_2026-02-02__2026-03-02.json
   fallback/
     analisadas/
       2026-03-03/

@@ -66,9 +66,10 @@ Checks:
 ## extractor/storage.py
 Responsibility: file persistence for raw and processed layers.
 Outputs:
-- `raw/<base>/<date>.jsonl`
-- `processed/<base>/<date>.csv`
-- `processed/<base>/<date>.parquet`
+- `raw/<base>/<from_date>__<to_date>.jsonl`
+- `processed/<base>/<from_date>__<to_date>.csv`
+- `processed/<base>/<from_date>__<to_date>.parquet`
+- `processed/<base>/periodo_<from_date>__<to_date>.json`
 Behavior:
 - Deduplication by `issue_key + updated`.
 

@@ -77,6 +77,8 @@ def main() -> None:
             "base": item.base.value,
             "source_mode": item.source_mode.value,
             "total_records": item.total_records,
+            "from_date": item.from_date.isoformat(),
+            "to_date": item.to_date.isoformat(),
             "raw_path": item.raw_path,
             "csv_path": item.csv_path,
             "parquet_path": item.parquet_path,

@@ -169,9 +169,15 @@ class ExtractionService:
         )
         validate_records(envelope.records, from_date=from_date, to_date=to_date)
 
-        raw_path = self._storage.persist_raw(base, to_date, envelope.raw_issues)
+        raw_path = self._storage.persist_raw(
+            base=base, from_date=from_date, to_date=to_date, issues=envelope.raw_issues
+        )
         processed = self._storage.persist_processed(
-            base, to_date, envelope.records, formats
+            base=base,
+            from_date=from_date,
+            to_date=to_date,
+            records=envelope.records,
+            formats=formats,
         )
         finished_at = datetime.now(UTC)
 
@@ -201,6 +207,8 @@ class ExtractionService:
             base=base,
             source_mode=envelope.source_mode,
             total_records=len(envelope.records),
+            from_date=from_date,
+            to_date=to_date,
             raw_path=str(raw_path) if raw_path else None,
             csv_path=str(processed.get("csv")) if processed.get("csv") else None,
             parquet_path=(
@@ -237,7 +245,11 @@ class ExtractionService:
         validate_records(envelope.records, from_date=from_date, to_date=to_date)
 
         processed = self._storage.persist_processed(
-            base, to_date, envelope.records, formats
+            base=base,
+            from_date=from_date,
+            to_date=to_date,
+            records=envelope.records,
+            formats=formats,
         )
         finished_at = datetime.now(UTC)
 
@@ -269,6 +281,8 @@ class ExtractionService:
             base=base,
             source_mode=envelope.source_mode,
             total_records=len(envelope.records),
+            from_date=from_date,
+            to_date=to_date,
             raw_path=str(csv_path),
             csv_path=str(processed.get("csv")) if processed.get("csv") else None,
             parquet_path=(

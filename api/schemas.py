@@ -21,6 +21,8 @@ class BaseRunResponse(BaseModel):
     base: str
     source_mode: str
     total_records: int
+    from_date: date
+    to_date: date
     raw_path: str | None
     csv_path: str | None
     parquet_path: str | None
