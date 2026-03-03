@@ -11,14 +11,14 @@ Escopo da extração:
 Decisões fixas deste projeto:
 - Stack de referência: `Python`
 - Saída principal: `CSV` e `Parquet` em disco
-- Janela temporal padrão: de `(D-1) - 1 mês` até `D0` (hoje)
+- Janela temporal padrão: de `(D-1) - 1 mês` até `D-1`.
 - Estratégia: `api-first`
 - Fallback via Playwright: somente em falha de API
 
 ---
 
 ## 2) Visão Geral do Fluxo
-1. Calcular a janela de execução (`from`, `to`), padrão `(D-1)-1 mês .. D0`.
+1. Calcular a janela de execução (`from`, `to`), padrão `(D-1)-1 mês .. D-1`.
 2. Resolver IDs de campos customizados no Jira por nome (sem hardcode de `customfield_xxxxx`).
 3. Montar JQL por base com regras de status/tipo/espaço e data de referência.
 4. Consultar issues via API com paginação (`startAt`, `maxResults`).
@@ -58,8 +58,8 @@ Decisões fixas deste projeto:
 ### 3.4 Regra temporal comum
 - Janela padrão diária:
   - `from = (D-1) - 1 mês`
-  - `to = D0 (hoje)`
-  - Exemplo em `2026-03-03`: `from=2026-02-02`, `to=2026-03-03`
+  - `to = D-1`
+  - Exemplo em `2026-03-03`: `from=2026-02-02`, `to=2026-03-02`
 
 ---
 
@@ -95,6 +95,11 @@ RETRY_ATTEMPTS=4
 RETRY_BACKOFF_SECONDS=2
 PLAYWRIGHT_HEADLESS=true
 CLEAN_OUTPUT_ON_API_RUN=true
+LOG_LEVEL=INFO
+LOG_JSON=false
+LOG_FILE=output/logs/application.log
+LOG_MAX_BYTES=10485760
+LOG_BACKUP_COUNT=10
 ```
 
 Importante:
@@ -117,14 +122,14 @@ poetry run extractor-run \
 ```
 
 Comportamentos:
-- `--from/--to` omitidos: usar padrão `(D-1)-1 mês .. D0`
+- `--from/--to` omitidos: usar padrão `(D-1)-1 mês .. D-1`
 - `--mode api-first`: tenta API; fallback Playwright apenas em erro elegível
 - `--base all`: processa as 3 bases na mesma execução
 
 Exemplos:
 
 ```bash
-# Janela padrão ((D-1)-1 mês .. D0), todas as bases
+# Janela padrão ((D-1)-1 mês .. D-1), todas as bases
 poetry run extractor-run --base all --mode api-first --format csv,parquet
 
 # Janela explícita
@@ -326,11 +331,29 @@ Monitorar:
 - acionamento de fallback (deve ser baixo)
 - volume extraído por base
 - percentual de registros descartados por deduplicação
+- erros por endpoint HTTP (`/v1/extractions/run`)
+- taxa de limpeza de diretórios por execução (`api-first`)
 
 Alertas recomendados:
 - 2+ dias consecutivos com fallback acionado
 - volume zero inesperado
 - erro de autenticação repetido
+
+Logs da aplicação:
+- Console e arquivo rotativo são habilitados por padrão.
+- Arquivo padrão: `output/logs/application.log`
+- Rotação por tamanho:
+  - `LOG_MAX_BYTES`
+  - `LOG_BACKUP_COUNT`
+- Formato:
+  - texto (default)
+  - JSON (`LOG_JSON=true`) para ingestão em observabilidade.
+
+Acompanhar logs em Linux:
+
+```bash
+tail -f output/logs/application.log
+```
 
 ---
 
@@ -363,7 +386,7 @@ Encerrar com erro quando:
 ## 13) Testes e Critérios de Aceite
 1. API extrai `encerradas`, `analisadas` e `ingressadas` gerando CSV e Parquet.
 2. Paginação funciona com múltiplas páginas.
-3. Janela padrão `(D-1)-1 mês .. D0` é respeitada quando `--from/--to` não são informados.
+3. Janela padrão `(D-1)-1 mês .. D-1` é respeitada quando `--from/--to` não são informados.
 4. Base `analisadas` respeita a lista de status e `Tipo do ticket = ATENDIMENTO`.
 5. Falha simulada de API aciona fallback automaticamente.
 6. Saída do fallback é padronizada no mesmo schema da API.
@@ -386,7 +409,7 @@ Encerrar com erro quando:
 - Implementação de referência: `Python`
 - Saída principal: arquivo local `CSV + Parquet`
 - Fallback somente quando API falhar
-- Janela padrão: `(D-1)-1 mês .. D0`
+- Janela padrão: `(D-1)-1 mês .. D-1`
 - Timezone padrão: `America/Bahia`
 - Mapeamento de campos customizados por nome (dinâmico), sem hardcode de `customfield_xxxxx`
 
@@ -450,6 +473,12 @@ Executar API FastAPI:
 
 ```bash
 poetry run extractor-api
+```
+
+Se o projeto foi instalado com `--no-root`, use:
+
+```bash
+poetry run python -m api.main
 ```
 
 Endpoints:

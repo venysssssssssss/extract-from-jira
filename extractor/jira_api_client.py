@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
@@ -17,6 +18,8 @@ from extractor.exceptions import (
 )
 from extractor.interfaces import JiraGateway
 from extractor.utils import canonicalize
+
+LOGGER = logging.getLogger(__name__)
 
 
 class JiraApiClient(JiraGateway):
@@ -57,12 +60,25 @@ class JiraApiClient(JiraGateway):
                 )
             except requests.RequestException as exc:
                 last_error = ApiTransientError(f"Request to Jira failed: {exc}")
+                LOGGER.warning(
+                    "jira_request_network_error attempt=%s method=%s path=%s error=%s",
+                    attempt,
+                    method,
+                    path,
+                    exc,
+                )
                 if attempt == self._retry_attempts:
                     raise last_error from exc
                 time.sleep(self._retry_backoff * attempt)
                 continue
 
             if response.status_code in (401, 403):
+                LOGGER.error(
+                    "jira_request_auth_error method=%s path=%s status=%s",
+                    method,
+                    path,
+                    response.status_code,
+                )
                 raise ApiAuthError(
                     f"Jira authentication/authorization failed ({response.status_code})"
                 )
@@ -70,11 +86,24 @@ class JiraApiClient(JiraGateway):
                 last_error = ApiTransientError(
                     f"Jira transient error {response.status_code}: {response.text[:300]}"
                 )
+                LOGGER.warning(
+                    "jira_request_transient_error attempt=%s method=%s path=%s status=%s",
+                    attempt,
+                    method,
+                    path,
+                    response.status_code,
+                )
                 if attempt == self._retry_attempts:
                     raise last_error
                 time.sleep(self._retry_backoff * attempt)
                 continue
             if response.status_code >= 400:
+                LOGGER.error(
+                    "jira_request_non_retriable_error method=%s path=%s status=%s",
+                    method,
+                    path,
+                    response.status_code,
+                )
                 raise ExtractionError(
                     f"Jira API non-retriable error {response.status_code}: {response.text[:500]}"
                 )

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import shutil
 from datetime import UTC, date, datetime
 from hashlib import sha256
@@ -26,6 +27,8 @@ from extractor.interfaces import (
 from extractor.jql_builder import build_jql
 from extractor.normalizer import utc_now_iso
 from extractor.validators import validate_records
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ExtractionService:
@@ -65,6 +68,15 @@ class ExtractionService:
         run_id = str(uuid4())
         window = self._resolve_window(from_date, to_date)
         bases = self._resolve_bases(request_base)
+        LOGGER.info(
+            "extraction_run_started run_id=%s base=%s mode=%s from=%s to=%s formats=%s",
+            run_id,
+            request_base,
+            mode,
+            window.from_date,
+            window.to_date,
+            formats,
+        )
 
         if mode == "api-first" and self._clean_output_on_api_run:
             self._cleanup_output_for_bases(bases)
@@ -74,6 +86,7 @@ class ExtractionService:
         results: list[BaseExecutionResult] = []
         for base in bases:
             started_at = datetime.now(UTC)
+            LOGGER.info("base_extraction_started run_id=%s base=%s", run_id, base.value)
             try:
                 result = self._run_base_via_api(
                     run_id=run_id,
@@ -87,16 +100,36 @@ class ExtractionService:
             except (ApiAuthError, ApiTransientError, ApiSchemaError) as exc:
                 if mode != "api-first":
                     raise
-                result = self._run_base_via_fallback(
-                    run_id=run_id,
-                    base=base,
-                    from_date=window.from_date,
-                    to_date=window.to_date,
-                    formats=formats,
-                    started_at=started_at,
-                    fallback_reason=str(exc),
+                LOGGER.warning(
+                    "api_extraction_failed_switching_to_fallback run_id=%s base=%s reason=%s",
+                    run_id,
+                    base.value,
+                    exc,
                 )
+                try:
+                    result = self._run_base_via_fallback(
+                        run_id=run_id,
+                        base=base,
+                        from_date=window.from_date,
+                        to_date=window.to_date,
+                        formats=formats,
+                        started_at=started_at,
+                        fallback_reason=str(exc),
+                    )
+                except FallbackExecutionError:
+                    LOGGER.exception(
+                        "fallback_extraction_failed run_id=%s base=%s", run_id, base.value
+                    )
+                    raise
             results.append(result)
+            LOGGER.info(
+                "base_extraction_finished run_id=%s base=%s source=%s total=%s",
+                run_id,
+                result.base.value,
+                result.source_mode.value,
+                result.total_records,
+            )
+        LOGGER.info("extraction_run_finished run_id=%s base_count=%s", run_id, len(results))
         return results
 
     def _run_base_via_api(
@@ -154,6 +187,14 @@ class ExtractionService:
                 "source_mode": envelope.source_mode.value,
                 "status": "success",
             }
+        )
+        LOGGER.info(
+            "api_persistence_finished run_id=%s base=%s raw=%s csv=%s parquet=%s",
+            run_id,
+            base.value,
+            raw_path,
+            processed.get("csv"),
+            processed.get("parquet"),
         )
 
         return BaseExecutionResult(
@@ -215,6 +256,14 @@ class ExtractionService:
                 "fallback_file": str(csv_path),
             }
         )
+        LOGGER.info(
+            "fallback_persistence_finished run_id=%s base=%s fallback_file=%s csv=%s parquet=%s",
+            run_id,
+            base.value,
+            csv_path,
+            processed.get("csv"),
+            processed.get("parquet"),
+        )
 
         return BaseExecutionResult(
             base=base,
@@ -252,3 +301,4 @@ class ExtractionService:
                 target = self._output_dir / layer / base.value
                 if target.exists():
                     shutil.rmtree(target)
+                    LOGGER.info("output_cleaned base=%s layer=%s path=%s", base.value, layer, target)

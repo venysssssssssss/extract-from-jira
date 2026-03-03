@@ -4,11 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 from datetime import date
 
 from dotenv import load_dotenv
 
 from extractor.bootstrap import build_service
+from extractor.config import Settings
+from extractor.logging_config import configure_logging
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -19,6 +25,14 @@ def _parse_date(value: str | None) -> date | None:
 
 def main() -> None:
     load_dotenv()
+    settings = Settings()
+    configure_logging(
+        level=settings.log_level,
+        json_format=settings.log_json,
+        log_file=settings.log_file,
+        max_bytes=settings.log_max_bytes,
+        backup_count=settings.log_backup_count,
+    )
 
     parser = argparse.ArgumentParser(description="Run Jira extraction pipeline")
     parser.add_argument(
@@ -40,7 +54,15 @@ def main() -> None:
     args = parser.parse_args()
     formats = tuple(item.strip() for item in args.fmt.split(",") if item.strip())
 
-    service = build_service()
+    LOGGER.info(
+        "cli_extraction_start base=%s mode=%s formats=%s from=%s to=%s",
+        args.base,
+        args.mode,
+        formats,
+        args.from_date,
+        args.to_date,
+    )
+    service = build_service(settings)
     results = service.run(
         request_base=args.base,
         from_date=_parse_date(args.from_date),
@@ -48,6 +70,7 @@ def main() -> None:
         formats=formats,
         mode=args.mode,
     )
+    LOGGER.info("cli_extraction_finished bases=%d", len(results))
 
     serializable = [
         {

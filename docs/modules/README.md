@@ -1,10 +1,10 @@
 # Module Documentation
 
 ## extractor/config.py
-Responsibility: load typed settings from environment and compute default extraction window ((D-1)-1 mês .. D0).
+Responsibility: load typed settings from environment and compute default extraction window ((D-1)-1 mês .. D-1).
 Key classes/functions:
 - `Settings`: central typed configuration with env aliases.
-- `default_window()`: returns extraction window from `(D-1)-1 mês` up to `D0`.
+- `default_window()`: returns extraction window from `(D-1)-1 mês` up to `D-1`.
 
 ## extractor/domain.py
 Responsibility: immutable domain contracts independent from frameworks.
@@ -30,6 +30,13 @@ Contracts:
 ## extractor/utils.py
 Responsibility: generic utility helpers.
 - `canonicalize()`: accent-insensitive text normalization.
+
+## extractor/logging_config.py
+Responsibility: centralized logging setup and request context propagation.
+Main behavior:
+- Configures console + rotating file handlers.
+- Supports plain text or JSON logs via env vars.
+- Injects `request_id` into all records using context variables.
 
 ## extractor/jql_builder.py
 Responsibility: deterministic JQL construction from business rules and extraction window.
@@ -98,6 +105,9 @@ Responsibility: FastAPI input/output schema definitions.
 
 ## api/main.py
 Responsibility: HTTP service layer.
+Main behavior:
+- Adds request logging middleware with `X-Request-ID`.
+- Uses centralized logging configuration.
 Endpoints:
 - `GET /healthz`
 - `POST /v1/extractions/run`

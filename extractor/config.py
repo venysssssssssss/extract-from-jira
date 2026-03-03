@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     clean_output_on_api_run: bool = Field(
         default=True, validation_alias="CLEAN_OUTPUT_ON_API_RUN"
     )
+    log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
+    log_json: bool = Field(default=False, validation_alias="LOG_JSON")
+    log_file: Path = Field(
+        default=Path("output/logs/application.log"), validation_alias="LOG_FILE"
+    )
+    log_max_bytes: int = Field(default=10_485_760, validation_alias="LOG_MAX_BYTES")
+    log_backup_count: int = Field(default=10, validation_alias="LOG_BACKUP_COUNT")
 
     @staticmethod
     def _subtract_one_month(reference_date: date) -> date:
@@ -56,11 +63,11 @@ class Settings(BaseSettings):
         return reference_date.replace(year=year, month=month, day=day)
 
     def default_window(self) -> ExtractionWindow:
-        """Return window from (D-1 minus 1 month) up to D0."""
+        """Return window from (D-1 minus 1 month) up to D-1."""
 
         tz = ZoneInfo(self.timezone)
         today = datetime.now(tz).date()
         reference_d_minus_1 = today - timedelta(days=1)
         from_date = self._subtract_one_month(reference_d_minus_1)
-        to_date = today
+        to_date = reference_d_minus_1
         return ExtractionWindow(from_date=from_date, to_date=to_date)

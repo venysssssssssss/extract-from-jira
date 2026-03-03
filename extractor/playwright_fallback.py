@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import date
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -9,6 +10,8 @@ from urllib.parse import parse_qs, urlparse
 from extractor.domain import BaseName
 from extractor.exceptions import FallbackExecutionError
 from extractor.interfaces import FallbackGateway
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PlaywrightFallback(FallbackGateway):
@@ -40,6 +43,7 @@ class PlaywrightFallback(FallbackGateway):
         target = fallback_dir / f"filter_{filter_id}.csv"
 
         try:
+            LOGGER.info("fallback_export_started base=%s filter_url=%s", base.value, filter_url)
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(headless=self._headless)
                 context = browser.new_context(accept_downloads=True)
@@ -68,6 +72,7 @@ class PlaywrightFallback(FallbackGateway):
         if not target.exists():
             raise FallbackExecutionError("Playwright did not produce export file")
 
+        LOGGER.info("fallback_export_finished base=%s file=%s", base.value, target)
         return target
 
     def _attempt_login(self, page: object) -> None:
