@@ -27,3 +27,7 @@ class FallbackExecutionError(ExtractionError):
 
 class ValidationError(ExtractionError):
     """Raised when transformed data does not satisfy quality checks."""
+
+
+class DatabaseWriteError(ExtractionError):
+    """Raised when writing extracted records to the SQL Server fails."""

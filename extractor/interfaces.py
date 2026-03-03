@@ -74,6 +74,20 @@ class ExtractorService(Protocol):
         """Run extraction and return per-base execution results."""
 
 
+class DatabaseWriter(Protocol):
+    """Abstraction for writing processed records into relational storage."""
+
+    def upsert_records(
+        self,
+        *,
+        base: BaseName,
+        from_date: date,
+        to_date: date,
+        records: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Upsert records for a base and return write stats."""
+
+
 class Normalizer(Protocol):
     """Transforms raw Jira payloads into normalized records."""
 

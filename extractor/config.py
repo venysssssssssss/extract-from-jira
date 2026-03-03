@@ -48,6 +48,18 @@ class Settings(BaseSettings):
     )
     log_max_bytes: int = Field(default=10_485_760, validation_alias="LOG_MAX_BYTES")
     log_backup_count: int = Field(default=10, validation_alias="LOG_BACKUP_COUNT")
+    db_server: str | None = Field(default=None, validation_alias="DB_SERVER")
+    db_driver: str | None = Field(default=None, validation_alias="DB_DRIVER")
+    db_database: str | None = Field(default=None, validation_alias="DB_DATABASE")
+    db_user: str | None = Field(default=None, validation_alias="DB_USER")
+    db_password: str | None = Field(default=None, validation_alias="DB_PASSWORD")
+    db_schema: str = Field(default="dbo", validation_alias="DB_SCHEMA")
+    db_encrypt: bool = Field(default=False, validation_alias="DB_ENCRYPT")
+    db_trust_server_certificate: bool = Field(
+        default=True, validation_alias="DB_TRUST_SERVER_CERTIFICATE"
+    )
+    db_connect_timeout: int = Field(default=30, validation_alias="DB_CONNECT_TIMEOUT")
+    db_enabled: bool = Field(default=True, validation_alias="DB_ENABLED")
 
     @staticmethod
     def _subtract_one_month(reference_date: date) -> date:
@@ -71,3 +83,16 @@ class Settings(BaseSettings):
         from_date = self._subtract_one_month(reference_d_minus_1)
         to_date = reference_d_minus_1
         return ExtractionWindow(from_date=from_date, to_date=to_date)
+
+    @property
+    def database_configured(self) -> bool:
+        """Whether DB_* credentials are present and non-empty."""
+
+        required = (
+            self.db_server,
+            self.db_driver,
+            self.db_database,
+            self.db_user,
+            self.db_password,
+        )
+        return all(value is not None and str(value).strip() for value in required)

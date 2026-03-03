@@ -73,6 +73,14 @@ Outputs:
 Behavior:
 - Deduplication by `issue_key + updated`.
 
+## extractor/sql_server_writer.py
+Responsibility: write extracted records into SQL Server tables per base.
+Main behavior:
+- Creates `jira_<base>` table if it does not exist.
+- Uses Portuguese column names in DB schema.
+- Rewrites current period (`periodo_inicio/periodo_fim`) and inserts fresh rows.
+- Verifies row count for data integrity after load.
+
 ## extractor/audit.py
 Responsibility: append structured audit events in JSONL.
 Output:

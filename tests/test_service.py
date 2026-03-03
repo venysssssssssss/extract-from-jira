@@ -75,6 +75,26 @@ class FakeFallbackGateway:
         return csv_file
 
 
+class FakeDatabaseWriter:
+    def __init__(self) -> None:
+        self.calls: list[dict] = []
+
+    def upsert_records(self, *, base, from_date, to_date, records):
+        self.calls.append(
+            {
+                "base": base.value,
+                "from_date": from_date.isoformat(),
+                "to_date": to_date.isoformat(),
+                "rows": len(records),
+            }
+        )
+        return {
+            "table": f"dbo.jira_{base.value}",
+            "inserted_rows": len(records),
+            "period_count": len(records),
+        }
+
+
 def test_service_runs_fallback_when_api_fails(tmp_path: Path) -> None:
     service = ExtractionService(
         jira_gateway=FakeJiraGateway(),
@@ -142,3 +162,36 @@ def test_service_cleans_base_output_before_api_run(tmp_path: Path) -> None:
     assert not (stale_raw / "stale.jsonl").exists()
     assert not (stale_processed / "stale.csv").exists()
     assert not (stale_fallback / "stale.csv").exists()
+
+
+def test_service_writes_records_to_database(tmp_path: Path) -> None:
+    db_writer = FakeDatabaseWriter()
+    service = ExtractionService(
+        jira_gateway=FakeJiraGatewaySuccess(),
+        fallback_gateway=FakeFallbackGateway(),
+        normalizer=JiraNormalizer(),
+        storage=FileStorage(tmp_path),
+        auditor=JsonlAuditor(tmp_path),
+        output_dir=tmp_path,
+        max_results=100,
+        default_window_factory=lambda: ExtractionWindow(
+            from_date=date(2026, 2, 2), to_date=date(2026, 3, 2)
+        ),
+        clean_output_on_api_run=True,
+        database_writer=db_writer,
+    )
+
+    results = service.run(
+        request_base="encerradas",
+        from_date=date(2026, 2, 2),
+        to_date=date(2026, 3, 2),
+        formats=("csv",),
+        mode="api-first",
+    )
+
+    assert len(results) == 1
+    assert len(db_writer.calls) == 1
+    assert db_writer.calls[0]["base"] == "encerradas"
+    assert db_writer.calls[0]["from_date"] == "2026-02-02"
+    assert db_writer.calls[0]["to_date"] == "2026-03-02"
+    assert db_writer.calls[0]["rows"] == results[0].total_records

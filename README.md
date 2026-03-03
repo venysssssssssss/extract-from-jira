@@ -100,12 +100,24 @@ LOG_JSON=false
 LOG_FILE=output/logs/application.log
 LOG_MAX_BYTES=10485760
 LOG_BACKUP_COUNT=10
+
+DB_ENABLED=true
+DB_SERVER=10.71.202.120\\user
+DB_DRIVER=ODBC Driver 18 for SQL Server
+DB_DATABASE=db
+DB_USER=userdb
+DB_PASSWORD=trocar-por-senha-real
+DB_SCHEMA=dbo
+DB_ENCRYPT=false
+DB_TRUST_SERVER_CERTIFICATE=true
+DB_CONNECT_TIMEOUT=30
 ```
 
 Importante:
 - Não versionar credenciais reais.
 - Tratar o arquivo `Documentação bases Jira.docx` como sensível, pois contém segredos em texto.
 - Com `CLEAN_OUTPUT_ON_API_RUN=true`, os diretórios `output/raw/<base>`, `output/processed/<base>` e `output/fallback/<base>` são limpos antes de cada execução `api-first`.
+- Com `DB_ENABLED=true` e variáveis `DB_*` válidas, os dados de cada base também são carregados no SQL Server.
 
 ---
 
@@ -227,6 +239,20 @@ Registrar por base:
 - `source_mode` (`api`)
 - `status_execucao`
 - `erro` (se houver)
+
+### 7.9 Carga SQL Server
+Após persistir os arquivos em `output/processed`, a aplicação:
+1. Conecta no SQL Server via `DB_SERVER/DB_DRIVER/DB_DATABASE/DB_USER/DB_PASSWORD`.
+2. Cria automaticamente as tabelas (se não existirem):
+   - `dbo.jira_encerradas`
+   - `dbo.jira_analisadas`
+   - `dbo.jira_ingressadas`
+3. Mantém colunas em português na base de dados:
+   - `chave_ticket`, `resumo`, `status`, `data_criacao`, `data_atualizacao`, `base_origem`,
+   - `data_referencia`, `espaco`, `tipo_ticket`, `extraido_em`, `modo_origem`,
+   - `periodo_inicio`, `periodo_fim`, `carga_em`
+4. Reescreve o período atual (`DELETE` por `periodo_inicio/periodo_fim`) e insere os dados novos.
+5. Valida veracidade comparando contagem inserida vs contagem existente no período.
 
 ---
 

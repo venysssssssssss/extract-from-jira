@@ -15,10 +15,12 @@ from extractor.exceptions import (
     ApiAuthError,
     ApiSchemaError,
     ApiTransientError,
+    DatabaseWriteError,
     FallbackExecutionError,
 )
 from extractor.interfaces import (
     Auditor,
+    DatabaseWriter,
     FallbackGateway,
     JiraGateway,
     Normalizer,
@@ -46,6 +48,7 @@ class ExtractionService:
         max_results: int,
         default_window_factory,
         clean_output_on_api_run: bool = True,
+        database_writer: DatabaseWriter | None = None,
     ) -> None:
         self._jira = jira_gateway
         self._fallback = fallback_gateway
@@ -56,6 +59,7 @@ class ExtractionService:
         self._max_results = max_results
         self._default_window_factory = default_window_factory
         self._clean_output_on_api_run = clean_output_on_api_run
+        self._database_writer = database_writer
 
     def run(
         self,
@@ -202,6 +206,13 @@ class ExtractionService:
             processed.get("csv"),
             processed.get("parquet"),
         )
+        self._write_to_database(
+            run_id=run_id,
+            base=base,
+            from_date=from_date,
+            to_date=to_date,
+            records=envelope.records,
+        )
 
         return BaseExecutionResult(
             base=base,
@@ -276,6 +287,13 @@ class ExtractionService:
             processed.get("csv"),
             processed.get("parquet"),
         )
+        self._write_to_database(
+            run_id=run_id,
+            base=base,
+            from_date=from_date,
+            to_date=to_date,
+            records=envelope.records,
+        )
 
         return BaseExecutionResult(
             base=base,
@@ -315,4 +333,40 @@ class ExtractionService:
                 target = self._output_dir / layer / base.value
                 if target.exists():
                     shutil.rmtree(target)
-                    LOGGER.info("output_cleaned base=%s layer=%s path=%s", base.value, layer, target)
+                    LOGGER.info(
+                        "output_cleaned base=%s layer=%s path=%s",
+                        base.value,
+                        layer,
+                        target,
+                    )
+
+    def _write_to_database(
+        self,
+        *,
+        run_id: str,
+        base: BaseName,
+        from_date: date,
+        to_date: date,
+        records: list[dict],
+    ) -> None:
+        if self._database_writer is None:
+            LOGGER.info("db_write_skipped_no_writer run_id=%s base=%s", run_id, base.value)
+            return
+        try:
+            stats = self._database_writer.upsert_records(
+                base=base,
+                from_date=from_date,
+                to_date=to_date,
+                records=records,
+            )
+        except DatabaseWriteError:
+            LOGGER.exception("db_write_failed run_id=%s base=%s", run_id, base.value)
+            raise
+        LOGGER.info(
+            "db_write_finished run_id=%s base=%s table=%s rows=%s verified=%s",
+            run_id,
+            base.value,
+            stats.get("table"),
+            stats.get("inserted_rows"),
+            stats.get("period_count"),
+        )
