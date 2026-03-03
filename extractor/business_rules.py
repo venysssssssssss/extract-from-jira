@@ -13,63 +13,36 @@ class BaseRule:
 
     base: BaseName
     filter_url: str
+    filter_id: int
     date_field_name: str
-    fixed_clauses: tuple[str, ...]
-
-
-ANALISADAS_STATUS = (
-    "ABERTO",
-    "ANALISAR",
-    "ANÁLISE",
-    "CIRADO",
-    "DESIGNADA",
-    "DEVOLVIDO",
-    "EM ABERTO",
-    "EM TRATAMENTO",
-    "EM TRATATIVA",
-    "EM VERIFICAÇÃO",
-    "EM ANDAMENTO",
-    "PENDENTE RETORNO",
-    "POSTERGADO",
-    "RECLASSIFICAR",
-    "RESPONDIDO",
-    "RETORNO",
-    "REITERADAS EM ABERTO",
-    "RECORRER ANEEL",
-    "PROCEDENTES",
-)
+    date_jql_name: str
 
 RULES: dict[BaseName, BaseRule] = {
     BaseName.ENCERRADAS: BaseRule(
         base=BaseName.ENCERRADAS,
         filter_url="https://ouvid.atlassian.net/issues/?filter=10719",
+        filter_id=10719,
         date_field_name="DATA FECHOU SALESFORCE",
-        fixed_clauses=(
-            '"Espaço" = "Atendimento Ouv"',
-            'status = "ENCERRADO"',
-        ),
+        date_jql_name="data fechou salesforce[date]",
     ),
     BaseName.ANALISADAS: BaseRule(
         base=BaseName.ANALISADAS,
         filter_url="https://ouvid.atlassian.net/issues/?filter=10720",
+        filter_id=10720,
         date_field_name="DATA ÚLTIMA ANÁLISE",
-        fixed_clauses=(
-            '"Tipo do ticket" = "ATENDIMENTO"',
-            "status IN (" + ", ".join(f'"{item}"' for item in ANALISADAS_STATUS) + ")",
-        ),
+        date_jql_name="data última análise[date]",
     ),
     BaseName.INGRESSADAS: BaseRule(
         base=BaseName.INGRESSADAS,
         filter_url="https://ouvid.atlassian.net/issues/?filter=10721",
-        date_field_name="DATA ABERTURA",
-        fixed_clauses=('"Espaço" = "Atendimento Ouv"',),
+        filter_id=10721,
+        date_field_name="DATA DE ABERTURA",
+        date_jql_name="data de abertura[date]",
     ),
 }
 
 REQUIRED_FIELD_NAMES = (
     "DATA FECHOU SALESFORCE",
     "DATA ÚLTIMA ANÁLISE",
-    "DATA ABERTURA",
-    "Espaço",
-    "Tipo do ticket",
+    "DATA DE ABERTURA",
 )

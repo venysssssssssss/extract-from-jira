@@ -1,0 +1,926 @@
+[
+  {
+    "base": "encerradas",
+    "month": "2025-11",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1458,
+    "matched_count": 0,
+    "missing_in_local_count": 1458,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "885638785",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885892418",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885620563",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886003088",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885839521",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885710572",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885809153",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886080564",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885648967",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886077637",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "encerradas",
+    "month": "2025-12",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1639,
+    "matched_count": 0,
+    "missing_in_local_count": 1639,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "889211551",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889552297",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889289609",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889580586",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889493847",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889130221",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889175835",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889153988",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889254104",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889174605",
+        "status": "encerrado",
+        "qty": 2
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "encerradas",
+    "month": "2026-01",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1515,
+    "matched_count": 0,
+    "missing_in_local_count": 1515,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "925337636",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925005059",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "924986902",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925015984",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925068186",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925195164",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925025138",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "924991398",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925403426",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925299092",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "encerradas",
+    "month": "2026-02",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 1849,
+    "reference_count": 1847,
+    "matched_count": 1847,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 2,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "937920941",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "937908006",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "encerradas",
+    "month": "2026-03",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 72,
+    "reference_count": 2,
+    "matched_count": 2,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 70,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "942124469",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942438080",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942455749",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942308739",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942245841",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942424859",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942150432",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942524754",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942319728",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942190802",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "analisadas",
+    "month": "2025-12",
+    "csv_file": "output/processed/analisadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 45,
+    "matched_count": 0,
+    "missing_in_local_count": 45,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "906080887",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "906086188",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "906095150",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903722319",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903738362",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903759538",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903755567",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903110895",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903109872",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "903484780",
+        "status": "postergado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "analisadas",
+    "month": "2026-01",
+    "csv_file": "output/processed/analisadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 109,
+    "matched_count": 0,
+    "missing_in_local_count": 109,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "926062093",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926080406",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926102359",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926083421",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926076575",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926182341",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "926090246",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "925025406",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "925420604",
+        "status": "postergado",
+        "qty": 1
+      },
+      {
+        "summary": "925343576",
+        "status": "postergado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "analisadas",
+    "month": "2026-02",
+    "csv_file": "output/processed/analisadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 406,
+    "matched_count": 0,
+    "missing_in_local_count": 406,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "942451602",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942483731",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942437865",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942227431",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "940501127",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "940543827",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937495027",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "941521278",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "941807821",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "941523332",
+        "status": "em tratativa",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "analisadas",
+    "month": "2026-03",
+    "csv_file": "output/processed/analisadas/2026-03-02.csv",
+    "local_count": 62,
+    "reference_count": 9,
+    "matched_count": 3,
+    "missing_in_local_count": 6,
+    "extra_in_local_count": 59,
+    "missing_examples": [
+      {
+        "summary": "938450490",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937675206",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937832108",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937132413",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937140059",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "927365020",
+        "status": "postergado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": [
+      {
+        "summary": "943939305",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942557329",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942480480",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942292284",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942145887",
+        "status": "em tratativa",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "ingressadas",
+    "month": "2025-11",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1507,
+    "matched_count": 0,
+    "missing_in_local_count": 1507,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "884680535",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "884866043",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "884563743",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885948676",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "885436299",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886387906",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886535148",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886602459",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886488357",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "886449350",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "ingressadas",
+    "month": "2025-12",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1650,
+    "matched_count": 0,
+    "missing_in_local_count": 1650,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "889211551",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889552297",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889289609",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889580586",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889493847",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889130221",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889175835",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889153988",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889254104",
+        "status": "encerrado",
+        "qty": 2
+      },
+      {
+        "summary": "889174605",
+        "status": "encerrado",
+        "qty": 2
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "ingressadas",
+    "month": "2026-01",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 0,
+    "reference_count": 1818,
+    "matched_count": 0,
+    "missing_in_local_count": 1818,
+    "extra_in_local_count": 0,
+    "missing_examples": [
+      {
+        "summary": "923336222",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "926033770",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "923191764",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "923173473",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925964318",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925813849",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "926070517",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "926126734",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925770358",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "925974394",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": []
+  },
+  {
+    "base": "ingressadas",
+    "month": "2026-02",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 1909,
+    "reference_count": 1906,
+    "matched_count": 1737,
+    "missing_in_local_count": 169,
+    "extra_in_local_count": 172,
+    "missing_examples": [
+      {
+        "summary": "942557329",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942124469",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942480480",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942292284",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942145887",
+        "status": "em aberto",
+        "qty": 1
+      }
+    ],
+    "extra_examples": [
+      {
+        "summary": "941693267",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942442210",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942153260",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942557329",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942124469",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "ingressadas",
+    "month": "2026-03",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 72,
+    "reference_count": 0,
+    "matched_count": 0,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 72,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "943952720",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "943407650",
+        "status": "reclassificar",
+        "qty": 1
+      },
+      {
+        "summary": "943409840",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943552280",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "943984234",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943952755",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943425257",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943461345",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943696780",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "943958301",
+        "status": "em tratativa",
+        "qty": 1
+      }
+    ]
+  }
+]

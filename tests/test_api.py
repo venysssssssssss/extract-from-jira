@@ -1,8 +1,7 @@
 from datetime import UTC, datetime
 
-from fastapi.testclient import TestClient
-
-from api.main import app
+import api.main as api_main
+from api.schemas import RunExtractionRequest
 from extractor.domain import BaseExecutionResult, BaseName, SourceMode
 
 
@@ -23,12 +22,9 @@ class FakeService:
 
 
 def test_run_extraction_endpoint(monkeypatch):
-    monkeypatch.setattr("api.main.get_service", lambda: FakeService())
-    client = TestClient(app)
+    monkeypatch.setattr(api_main, "get_service", lambda: FakeService())
 
-    response = client.post("/v1/extractions/run", json={"base": "encerradas"})
+    payload = api_main.run_extraction(RunExtractionRequest(base="encerradas"))
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["results"][0]["base"] == "encerradas"
-    assert payload["results"][0]["source_mode"] == "api"
+    assert payload.results[0].base == "encerradas"
+    assert payload.results[0].source_mode == "api"

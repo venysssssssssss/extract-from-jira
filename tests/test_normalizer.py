@@ -13,8 +13,8 @@ def test_normalize_api_issues_maps_core_fields() -> None:
                 "created": "2026-03-01T01:00:00.000+0000",
                 "updated": "2026-03-01T03:00:00.000+0000",
                 "customfield_data": "2026-03-01",
-                "customfield_espaco": {"value": "Atendimento Ouv"},
-                "customfield_tipo": {"value": "ATENDIMENTO"},
+                "project": {"key": "ATEN", "name": "Atendimento Ouv"},
+                "issuetype": {"name": "ATENDIMENTO"},
             },
         }
     ]
@@ -22,9 +22,7 @@ def test_normalize_api_issues_maps_core_fields() -> None:
     field_ids = {
         "DATA FECHOU SALESFORCE": "customfield_data",
         "DATA ÚLTIMA ANÁLISE": "customfield_data_an",
-        "DATA ABERTURA": "customfield_data_ing",
-        "Espaço": "customfield_espaco",
-        "Tipo do ticket": "customfield_tipo",
+        "DATA DE ABERTURA": "customfield_data_ing",
     }
 
     envelope = normalizer.normalize_api_issues(

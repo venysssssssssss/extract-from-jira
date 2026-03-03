@@ -18,13 +18,36 @@ class FakeJiraGateway:
         return {
             "DATA FECHOU SALESFORCE": "customfield_data_fechou",
             "DATA ÚLTIMA ANÁLISE": "customfield_data_analise",
-            "DATA ABERTURA": "customfield_data_abertura",
-            "Espaço": "customfield_espaco",
-            "Tipo do ticket": "customfield_tipo",
+            "DATA DE ABERTURA": "customfield_data_abertura",
         }
 
     def search_issues(self, jql: str, fields: tuple[str, ...], max_results: int):
         raise ApiTransientError("forced transient")
+
+
+class FakeJiraGatewaySuccess:
+    def resolve_field_ids(self, field_names: tuple[str, ...]) -> dict[str, str]:
+        return {
+            "DATA FECHOU SALESFORCE": "customfield_data_fechou",
+            "DATA ÚLTIMA ANÁLISE": "customfield_data_analise",
+            "DATA DE ABERTURA": "customfield_data_abertura",
+        }
+
+    def search_issues(self, jql: str, fields: tuple[str, ...], max_results: int):
+        return [
+            {
+                "key": "ATEN-1",
+                "fields": {
+                    "summary": "Linha API",
+                    "status": {"name": "ENCERRADO"},
+                    "created": "2026-03-02T10:00:00Z",
+                    "updated": "2026-03-02T11:00:00Z",
+                    "project": {"key": "ATEN", "name": "ATEN"},
+                    "issuetype": {"name": "ATENDIMENTO"},
+                    "customfield_data_fechou": "2026-03-02",
+                },
+            }
+        ]
 
 
 class FakeFallbackGateway:
@@ -78,3 +101,42 @@ def test_service_runs_fallback_when_api_fails(tmp_path: Path) -> None:
     assert results[0].source_mode.value == "playwright_fallback"
     assert results[0].total_records == 1
     assert (tmp_path / "processed" / "analisadas" / "2026-03-01.csv").exists()
+
+
+def test_service_cleans_base_output_before_api_run(tmp_path: Path) -> None:
+    stale_raw = tmp_path / "raw" / "encerradas"
+    stale_processed = tmp_path / "processed" / "encerradas"
+    stale_fallback = tmp_path / "fallback" / "encerradas"
+    for directory in (stale_raw, stale_processed, stale_fallback):
+        directory.mkdir(parents=True, exist_ok=True)
+    (stale_raw / "stale.jsonl").write_text("{\"x\":1}\n", encoding="utf-8")
+    (stale_processed / "stale.csv").write_text("a,b\n1,2\n", encoding="utf-8")
+    (stale_fallback / "stale.csv").write_text("a,b\n1,2\n", encoding="utf-8")
+
+    service = ExtractionService(
+        jira_gateway=FakeJiraGatewaySuccess(),
+        fallback_gateway=FakeFallbackGateway(),
+        normalizer=JiraNormalizer(),
+        storage=FileStorage(tmp_path),
+        auditor=JsonlAuditor(tmp_path),
+        output_dir=tmp_path,
+        max_results=100,
+        default_window_factory=lambda: ExtractionWindow(
+            from_date=date(2026, 2, 2), to_date=date(2026, 3, 3)
+        ),
+        clean_output_on_api_run=True,
+    )
+
+    results = service.run(
+        request_base="encerradas",
+        from_date=date(2026, 2, 2),
+        to_date=date(2026, 3, 3),
+        formats=("csv",),
+        mode="api-first",
+    )
+
+    assert len(results) == 1
+    assert results[0].source_mode.value == "api"
+    assert not (stale_raw / "stale.jsonl").exists()
+    assert not (stale_processed / "stale.csv").exists()
+    assert not (stale_fallback / "stale.csv").exists()

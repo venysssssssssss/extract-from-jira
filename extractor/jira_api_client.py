@@ -124,30 +124,34 @@ class JiraApiClient(JiraGateway):
     ) -> list[dict[str, Any]]:
         """Fetch all Jira issues with paginated /search calls."""
 
-        start_at = 0
         issues: list[dict[str, Any]] = []
-        total: int | None = None
+        next_page_token: str | None = None
 
-        while total is None or start_at < total:
+        while True:
             body = {
                 "jql": jql,
                 "fields": list(dict.fromkeys(fields)),
-                "startAt": start_at,
                 "maxResults": max_results,
+                "fieldsByKeys": False,
             }
-            payload = self._request("POST", "/rest/api/3/search", payload=body)
+            if next_page_token:
+                body["nextPageToken"] = next_page_token
+
+            payload = self._request("POST", "/rest/api/3/search/jql", payload=body)
             if not isinstance(payload, dict):
-                raise ApiSchemaError("Unexpected /search payload type")
+                raise ApiSchemaError("Unexpected /search/jql payload type")
 
             page_issues = payload.get("issues")
-            total = payload.get("total")
-            if not isinstance(page_issues, list) or not isinstance(total, int):
-                raise ApiSchemaError("Jira /search payload missing issues or total")
+            if not isinstance(page_issues, list):
+                raise ApiSchemaError("Jira /search/jql payload missing issues list")
 
             issues.extend(item for item in page_issues if isinstance(item, dict))
-            start_at += max_results
+            next_token = payload.get("nextPageToken")
+            next_page_token = (
+                str(next_token) if isinstance(next_token, str) and next_token else None
+            )
 
-            if not page_issues:
+            if not page_issues or not next_page_token:
                 break
 
         return issues

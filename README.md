@@ -11,14 +11,14 @@ Escopo da extração:
 Decisões fixas deste projeto:
 - Stack de referência: `Python`
 - Saída principal: `CSV` e `Parquet` em disco
-- Janela temporal padrão: `D-30` até `D-1` (rolling 30 dias)
+- Janela temporal padrão: de `(D-1) - 1 mês` até `D0` (hoje)
 - Estratégia: `api-first`
 - Fallback via Playwright: somente em falha de API
 
 ---
 
 ## 2) Visão Geral do Fluxo
-1. Calcular a janela de execução (`from`, `to`), padrão `D-30..D-1`.
+1. Calcular a janela de execução (`from`, `to`), padrão `(D-1)-1 mês .. D0`.
 2. Resolver IDs de campos customizados no Jira por nome (sem hardcode de `customfield_xxxxx`).
 3. Montar JQL por base com regras de status/tipo/espaço e data de referência.
 4. Consultar issues via API com paginação (`startAt`, `maxResults`).
@@ -52,13 +52,14 @@ Decisões fixas deste projeto:
 
 ### 3.3 Base `ingressadas`
 - Filtro Jira: `https://ouvid.atlassian.net/issues/?filter=10721`
-- Campo de data de referência: `DATA ABERTURA`
+- Campo de data de referência: `DATA DE ABERTURA`
 - Regra adicional: `Espaço = Atendimento Ouv`
 
 ### 3.4 Regra temporal comum
 - Janela padrão diária:
-  - `from = D-30`
-  - `to = D-1`
+  - `from = (D-1) - 1 mês`
+  - `to = D0 (hoje)`
+  - Exemplo em `2026-03-03`: `from=2026-02-02`, `to=2026-03-03`
 
 ---
 
@@ -93,11 +94,13 @@ MAX_RESULTS=100
 RETRY_ATTEMPTS=4
 RETRY_BACKOFF_SECONDS=2
 PLAYWRIGHT_HEADLESS=true
+CLEAN_OUTPUT_ON_API_RUN=true
 ```
 
 Importante:
 - Não versionar credenciais reais.
 - Tratar o arquivo `Documentação bases Jira.docx` como sensível, pois contém segredos em texto.
+- Com `CLEAN_OUTPUT_ON_API_RUN=true`, os diretórios `output/raw/<base>`, `output/processed/<base>` e `output/fallback/<base>` são limpos antes de cada execução `api-first`.
 
 ---
 
@@ -114,14 +117,14 @@ poetry run extractor-run \
 ```
 
 Comportamentos:
-- `--from/--to` omitidos: usar padrão `D-30..D-1`
+- `--from/--to` omitidos: usar padrão `(D-1)-1 mês .. D0`
 - `--mode api-first`: tenta API; fallback Playwright apenas em erro elegível
 - `--base all`: processa as 3 bases na mesma execução
 
 Exemplos:
 
 ```bash
-# Janela padrão (D-30..D-1), todas as bases
+# Janela padrão ((D-1)-1 mês .. D0), todas as bases
 poetry run extractor-run --base all --mode api-first --format csv,parquet
 
 # Janela explícita
@@ -143,7 +146,7 @@ Endpoint:
 Resolver por nome exato (case-insensitive controlado):
 - `DATA FECHOU SALESFORCE`
 - `DATA ÚLTIMA ANÁLISE`
-- `DATA ABERTURA`
+- `DATA DE ABERTURA`
 - `Espaço`
 - `Tipo do ticket`
 
@@ -307,7 +310,7 @@ output/
 ## 11) Operação Diária e Agendamento
 
 ### 11.1 Frequência recomendada
-- 1 execução diária após fechamento do dia (`D-1` disponível).
+- 1 execução diária.
 
 ### 11.2 Exemplo com `cron`
 Executar todos os dias às 06:10 (timezone do servidor):
@@ -360,7 +363,7 @@ Encerrar com erro quando:
 ## 13) Testes e Critérios de Aceite
 1. API extrai `encerradas`, `analisadas` e `ingressadas` gerando CSV e Parquet.
 2. Paginação funciona com múltiplas páginas.
-3. Janela `D-30..D-1` é respeitada em todas as bases.
+3. Janela padrão `(D-1)-1 mês .. D0` é respeitada quando `--from/--to` não são informados.
 4. Base `analisadas` respeita a lista de status e `Tipo do ticket = ATENDIMENTO`.
 5. Falha simulada de API aciona fallback automaticamente.
 6. Saída do fallback é padronizada no mesmo schema da API.
@@ -383,7 +386,7 @@ Encerrar com erro quando:
 - Implementação de referência: `Python`
 - Saída principal: arquivo local `CSV + Parquet`
 - Fallback somente quando API falhar
-- Janela padrão: `D-30..D-1`
+- Janela padrão: `(D-1)-1 mês .. D0`
 - Timezone padrão: `America/Bahia`
 - Mapeamento de campos customizados por nome (dinâmico), sem hardcode de `customfield_xxxxx`
 

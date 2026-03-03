@@ -1,0 +1,374 @@
+[
+  {
+    "base": "encerradas",
+    "month": "2026-02",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 1849,
+    "reference_count": 1847,
+    "matched_count": 1847,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 2,
+    "relaxed_matched_count": 1847,
+    "relaxed_missing_count": 0,
+    "relaxed_extra_count": 2,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "937920941",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "937908006",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "encerradas",
+    "month": "2026-03",
+    "csv_file": "output/processed/encerradas/2026-03-02.csv",
+    "local_count": 72,
+    "reference_count": 2,
+    "matched_count": 2,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 70,
+    "relaxed_matched_count": 2,
+    "relaxed_missing_count": 0,
+    "relaxed_extra_count": 70,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "942124469",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942438080",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942455749",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942308739",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942245841",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942424859",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942150432",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942524754",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942319728",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "942190802",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "analisadas",
+    "month": "2026-03",
+    "csv_file": "output/processed/analisadas/2026-03-02.csv",
+    "local_count": 62,
+    "reference_count": 9,
+    "matched_count": 3,
+    "missing_in_local_count": 6,
+    "extra_in_local_count": 59,
+    "relaxed_matched_count": 3,
+    "relaxed_missing_count": 6,
+    "relaxed_extra_count": 59,
+    "missing_examples": [
+      {
+        "summary": "938450490",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937675206",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937832108",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937132413",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "937140059",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "927365020",
+        "status": "postergado",
+        "qty": 1
+      }
+    ],
+    "extra_examples": [
+      {
+        "summary": "943939305",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942557329",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942480480",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942292284",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942145887",
+        "status": "em tratativa",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "ingressadas",
+    "month": "2026-02",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 1909,
+    "reference_count": 1906,
+    "matched_count": 1737,
+    "missing_in_local_count": 169,
+    "extra_in_local_count": 172,
+    "relaxed_matched_count": 1906,
+    "relaxed_missing_count": 0,
+    "relaxed_extra_count": 3,
+    "missing_examples": [
+      {
+        "summary": "942557329",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942124469",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942480480",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942292284",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942145887",
+        "status": "em aberto",
+        "qty": 1
+      }
+    ],
+    "extra_examples": [
+      {
+        "summary": "941693267",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942442210",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942153260",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "942557329",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942425498",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942494218",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942576272",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942527055",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942304589",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "942124469",
+        "status": "encerrado",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "base": "ingressadas",
+    "month": "2026-03",
+    "csv_file": "output/processed/ingressadas/2026-03-02.csv",
+    "local_count": 72,
+    "reference_count": 0,
+    "matched_count": 0,
+    "missing_in_local_count": 0,
+    "extra_in_local_count": 72,
+    "relaxed_matched_count": 0,
+    "relaxed_missing_count": 0,
+    "relaxed_extra_count": 72,
+    "missing_examples": [],
+    "extra_examples": [
+      {
+        "summary": "943952720",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "943407650",
+        "status": "reclassificar",
+        "qty": 1
+      },
+      {
+        "summary": "943409840",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943552280",
+        "status": "em aberto",
+        "qty": 1
+      },
+      {
+        "summary": "943984234",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943952755",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943425257",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943461345",
+        "status": "em tratativa",
+        "qty": 1
+      },
+      {
+        "summary": "943696780",
+        "status": "encerrado",
+        "qty": 1
+      },
+      {
+        "summary": "943958301",
+        "status": "em tratativa",
+        "qty": 1
+      }
+    ]
+  }
+]

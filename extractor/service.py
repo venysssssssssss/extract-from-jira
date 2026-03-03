@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 from datetime import UTC, date, datetime
 from hashlib import sha256
 from pathlib import Path
@@ -41,6 +42,7 @@ class ExtractionService:
         output_dir: Path,
         max_results: int,
         default_window_factory,
+        clean_output_on_api_run: bool = True,
     ) -> None:
         self._jira = jira_gateway
         self._fallback = fallback_gateway
@@ -50,6 +52,7 @@ class ExtractionService:
         self._output_dir = output_dir
         self._max_results = max_results
         self._default_window_factory = default_window_factory
+        self._clean_output_on_api_run = clean_output_on_api_run
 
     def run(
         self,
@@ -62,6 +65,9 @@ class ExtractionService:
         run_id = str(uuid4())
         window = self._resolve_window(from_date, to_date)
         bases = self._resolve_bases(request_base)
+
+        if mode == "api-first" and self._clean_output_on_api_run:
+            self._cleanup_output_for_bases(bases)
 
         field_ids = self._jira.resolve_field_ids(REQUIRED_FIELD_NAMES)
 
@@ -106,16 +112,16 @@ class ExtractionService:
     ) -> BaseExecutionResult:
         rule = RULES[base]
         date_field_id = field_ids[rule.date_field_name]
-        jql = build_jql(rule, date_field_id, self._resolve_window(from_date, to_date))
+        jql = build_jql(rule, self._resolve_window(from_date, to_date))
 
         fields = (
             "summary",
             "status",
             "created",
             "updated",
+            "project",
+            "issuetype",
             date_field_id,
-            field_ids["Espaço"],
-            field_ids["Tipo do ticket"],
         )
 
         issues = self._jira.search_issues(
@@ -237,3 +243,12 @@ class ExtractionService:
         if from_date or to_date:
             raise ValueError("Both --from and --to must be provided together")
         return self._default_window_factory()
+
+    def _cleanup_output_for_bases(self, bases: list[BaseName]) -> None:
+        """Remove base-specific output folders before API extraction run."""
+
+        for base in bases:
+            for layer in ("raw", "processed", "fallback"):
+                target = self._output_dir / layer / base.value
+                if target.exists():
+                    shutil.rmtree(target)

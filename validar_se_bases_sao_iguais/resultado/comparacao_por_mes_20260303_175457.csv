@@ -1,0 +1,6 @@
+base,month,csv_file,local_count,reference_count,matched_count,missing_in_local_count,extra_in_local_count,relaxed_matched_count,relaxed_missing_count,relaxed_extra_count
+encerradas,2026-02,output/processed/encerradas/2026-03-02.csv,1849,1847,1847,0,2,1847,0,2
+encerradas,2026-03,output/processed/encerradas/2026-03-02.csv,72,2,2,0,70,2,0,70
+analisadas,2026-03,output/processed/analisadas/2026-03-02.csv,62,9,3,6,59,3,6,59
+ingressadas,2026-02,output/processed/ingressadas/2026-03-02.csv,1909,1906,1737,169,172,1906,0,3
+ingressadas,2026-03,output/processed/ingressadas/2026-03-02.csv,72,0,0,0,72,0,0,72

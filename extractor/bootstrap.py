@@ -40,4 +40,5 @@ def build_service(settings: Settings | None = None) -> ExtractionService:
         output_dir=cfg.output_dir,
         max_results=cfg.max_results,
         default_window_factory=cfg.default_window,
+        clean_output_on_api_run=cfg.clean_output_on_api_run,
     )

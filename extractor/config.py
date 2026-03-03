@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import calendar
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -37,12 +38,29 @@ class Settings(BaseSettings):
     playwright_headless: bool = Field(
         default=True, validation_alias="PLAYWRIGHT_HEADLESS"
     )
+    clean_output_on_api_run: bool = Field(
+        default=True, validation_alias="CLEAN_OUTPUT_ON_API_RUN"
+    )
+
+    @staticmethod
+    def _subtract_one_month(reference_date: date) -> date:
+        """Subtract one calendar month preserving day when possible."""
+
+        year = reference_date.year
+        month = reference_date.month - 1
+        if month == 0:
+            month = 12
+            year -= 1
+        last_day = calendar.monthrange(year, month)[1]
+        day = min(reference_date.day, last_day)
+        return reference_date.replace(year=year, month=month, day=day)
 
     def default_window(self) -> ExtractionWindow:
-        """Return the rolling window D-30..D-1 in configured timezone."""
+        """Return window from (D-1 minus 1 month) up to D0."""
 
         tz = ZoneInfo(self.timezone)
         today = datetime.now(tz).date()
-        to_date = today - timedelta(days=1)
-        from_date = to_date - timedelta(days=29)
+        reference_d_minus_1 = today - timedelta(days=1)
+        from_date = self._subtract_one_month(reference_d_minus_1)
+        to_date = today
         return ExtractionWindow(from_date=from_date, to_date=to_date)

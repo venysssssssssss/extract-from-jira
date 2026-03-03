@@ -9,6 +9,6 @@
 - [x] Implement CLI entry point (`python -m extractor.run`).
 - [x] Implement FastAPI endpoints (`/healthz`, `/v1/extractions/run`).
 - [x] Add automated tests for JQL, normalizer, service fallback, and API endpoint.
-- [ ] Run local automated test suite and validate all checks passing. (Blocked: environment without internet access to install dependencies and without system `pytest`)
+- [x] Run local automated test suite and validate all checks passing.
 - [x] Add production containerization assets.
 - [x] Update README with implementation and runtime instructions.

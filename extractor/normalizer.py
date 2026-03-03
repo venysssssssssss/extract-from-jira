@@ -55,14 +55,14 @@ class JiraNormalizer(Normalizer):
     ) -> RecordEnvelope:
         rule = RULES[base]
         date_field_id = field_ids[rule.date_field_name]
-        espaco_field = field_ids["Espaço"]
-        tipo_field = field_ids["Tipo do ticket"]
 
         records: list[dict[str, Any]] = []
         for issue in issues:
             fields = issue.get("fields", {})
             if not isinstance(fields, dict):
                 continue
+            project = fields.get("project")
+            issuetype = fields.get("issuetype")
 
             records.append(
                 {
@@ -73,8 +73,8 @@ class JiraNormalizer(Normalizer):
                     "updated": self._pick_scalar(fields.get("updated")),
                     "base_origem": base.value,
                     "data_referencia": self._pick_scalar(fields.get(date_field_id)),
-                    "espaco": self._pick_scalar(fields.get(espaco_field)),
-                    "tipo_ticket": self._pick_scalar(fields.get(tipo_field)),
+                    "espaco": self._pick_scalar(project),
+                    "tipo_ticket": self._pick_scalar(issuetype),
                     "extracted_at": extracted_at_iso,
                     "source_mode": SourceMode.API.value,
                 }
@@ -102,8 +102,8 @@ class JiraNormalizer(Normalizer):
         created = pick_column("Created", "Data de criacao")
         updated = pick_column("Updated", "Atualizado")
         key = pick_column("Issue key", "Chave")
-        espaco = pick_column("Espaco", "Espaco - custom")
-        tipo = pick_column("Tipo do ticket", "Ticket type")
+        espaco = pick_column("Espaco", "Espaco - custom", "Project key", "Project")
+        tipo = pick_column("Tipo do ticket", "Ticket type", "Issue Type", "Tipo de item")
 
         data_referencia = (
             pick_column("DATA FECHOU SALESFORCE")
@@ -111,7 +111,7 @@ class JiraNormalizer(Normalizer):
             else (
                 pick_column("DATA ULTIMA ANALISE")
                 if base is BaseName.ANALISADAS
-                else pick_column("DATA ABERTURA")
+                else pick_column("DATA DE ABERTURA", "DATA ABERTURA")
             )
         )
 

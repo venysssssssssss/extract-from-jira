@@ -9,8 +9,9 @@ def test_build_jql_contains_window_and_ordering() -> None:
     rule = RULES[BaseName.ENCERRADAS]
     window = ExtractionWindow(from_date=date(2026, 2, 1), to_date=date(2026, 3, 1))
 
-    jql = build_jql(rule, "customfield_10000", window)
+    jql = build_jql(rule, window)
 
-    assert '"customfield_10000" >= "2026-02-01"' in jql
-    assert '"customfield_10000" <= "2026-03-01"' in jql
-    assert 'ORDER BY "customfield_10000" ASC, key ASC' in jql
+    assert "filter = 10719" in jql
+    assert '"data fechou salesforce[date]" >= "2026-02-01"' in jql
+    assert '"data fechou salesforce[date]" <= "2026-03-01"' in jql
+    assert "ORDER BY created DESC" in jql

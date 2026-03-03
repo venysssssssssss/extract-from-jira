@@ -1,10 +1,10 @@
 # Module Documentation
 
 ## extractor/config.py
-Responsibility: load typed settings from environment and compute default rolling window (D-30..D-1).
+Responsibility: load typed settings from environment and compute default extraction window ((D-1)-1 mês .. D0).
 Key classes/functions:
 - `Settings`: central typed configuration with env aliases.
-- `default_window()`: returns extraction window based on configured timezone.
+- `default_window()`: returns extraction window from `(D-1)-1 mês` up to `D0`.
 
 ## extractor/domain.py
 Responsibility: immutable domain contracts independent from frameworks.
@@ -80,6 +80,7 @@ Main behavior:
 ## extractor/service.py
 Responsibility: main orchestration use case (API-first, fallback on eligible API errors).
 Main behavior:
+- Clears `raw/processed/fallback` output folders for selected bases before each `api-first` execution (configurable).
 - Resolves field IDs once per run.
 - Extracts each base via API.
 - Falls back to Playwright when API error is eligible.
