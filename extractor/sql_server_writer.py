@@ -152,7 +152,7 @@ class SqlServerWriter:
     def _get_column_defs(self, base: BaseName) -> list[ColumnDef]:
         core_defs = [
             ColumnDef("chave_ticket", "NVARCHAR(128) NOT NULL", "issue_key", self._normalize_text),
-            ColumnDef("resumo", "NVARCHAR(4000) NULL", "summary", self._normalize_text),
+            ColumnDef("resumo", "NVARCHAR(MAX) NULL", "summary", self._normalize_text),
             ColumnDef("status", "NVARCHAR(255) NULL", "status", self._normalize_text),
             ColumnDef("data_criacao", "DATETIME2 NULL", "created", self._to_datetime),
             ColumnDef(
@@ -178,7 +178,7 @@ class SqlServerWriter:
         custom_defs = [
             ColumnDef(
                 canonicalize_column_name(field_name),
-                "NVARCHAR(4000) NULL",
+                "NVARCHAR(MAX) NULL",
                 canonicalize_column_name(field_name),
                 self._normalize_text,
             )
@@ -215,20 +215,43 @@ class SqlServerWriter:
             f"END"
         )
 
-    def _fetch_existing_columns(self, cursor: Any, base: BaseName) -> set[str]:
+    def _fetch_existing_columns(self, cursor: Any, base: BaseName) -> dict[str, dict[str, Any]]:
         cursor.execute(
             """
-SELECT COLUMN_NAME
+SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
 """,
             (self._schema, self._table_name(base)),
         )
-        return {
-            str(row[0]).strip().lower()
-            for row in cursor.fetchall()
-            if row and row[0] is not None
-        }
+        existing: dict[str, dict[str, Any]] = {}
+        for row in cursor.fetchall():
+            if not row or row[0] is None:
+                continue
+            existing[str(row[0]).strip().lower()] = {
+                "data_type": str(row[1]).strip().lower() if row[1] is not None else None,
+                "character_maximum_length": row[2],
+            }
+        return existing
+
+    @staticmethod
+    def _column_supports_expected_type(existing: dict[str, Any], expected_sql_type: str) -> bool:
+        normalized_expected = expected_sql_type.strip().lower()
+        existing_type = existing.get("data_type")
+        existing_length = existing.get("character_maximum_length")
+
+        if normalized_expected.startswith("nvarchar(max)"):
+            return existing_type == "nvarchar" and existing_length == -1
+        if normalized_expected.startswith("nvarchar("):
+            start = normalized_expected.find("(") + 1
+            end = normalized_expected.find(")")
+            expected_length = int(normalized_expected[start:end])
+            return existing_type == "nvarchar" and existing_length == expected_length
+        if normalized_expected.startswith("datetime2"):
+            return existing_type == "datetime2"
+        if normalized_expected.startswith("date"):
+            return existing_type == "date"
+        return False
 
     def _migrate_schema(
         self, cursor: Any, base: BaseName, column_defs: list[ColumnDef]
@@ -236,10 +259,16 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
         existing_columns = self._fetch_existing_columns(cursor, base)
         table = self._qualified_table(base)
         for column in column_defs:
-            if column.sql_name.lower() in existing_columns:
+            existing = existing_columns.get(column.sql_name.lower())
+            if existing is None:
+                cursor.execute(
+                    f"ALTER TABLE {table} ADD {self._quoted_identifier(column.sql_name)} {column.sql_type};"
+                )
+                continue
+            if self._column_supports_expected_type(existing, column.sql_type):
                 continue
             cursor.execute(
-                f"ALTER TABLE {table} ADD {self._quoted_identifier(column.sql_name)} {column.sql_type};"
+                f"ALTER TABLE {table} ALTER COLUMN {self._quoted_identifier(column.sql_name)} {column.sql_type};"
             )
 
     def _build_delete_sql(self, base: BaseName) -> str:
@@ -264,6 +293,14 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
             f"SELECT COUNT(1) FROM {self._qualified_table(base)} "
             f"WHERE [periodo_inicio] = ? AND [periodo_fim] = ?;"
         )
+
+    @staticmethod
+    def _has_large_text_payload(rows: list[tuple]) -> bool:
+        for row in rows:
+            for value in row:
+                if isinstance(value, str) and len(value) > 4000:
+                    return True
+        return False
 
     def _build_rows(
         self,
@@ -336,8 +373,12 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
                     LOGGER.info("db_upsert_skipped_no_rows base=%s", base.value)
                     return {"table": table, "inserted_rows": 0, "period_count": 0}
                 cursor.execute(delete_sql, (from_date, to_date))
-                cursor.fast_executemany = True
-                cursor.executemany(insert_sql, rows)
+                if self._has_large_text_payload(rows):
+                    for row in rows:
+                        cursor.execute(insert_sql, row)
+                else:
+                    cursor.fast_executemany = True
+                    cursor.executemany(insert_sql, rows)
                 cursor.execute(count_sql, (from_date, to_date))
                 period_count = int(cursor.fetchone()[0])
                 if period_count != len(rows):
