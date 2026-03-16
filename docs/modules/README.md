@@ -52,14 +52,14 @@ Main behavior:
 ## extractor/normalizer.py
 Responsibility: unify API and fallback records into a shared schema.
 Main behavior:
-- `normalize_api_issues()`: transforms raw Jira issue payload.
-- `normalize_fallback_csv()`: maps CSV export columns to the same schema.
+- `normalize_api_issues()`: transforms raw Jira issue payload and expands custom fields per base.
+- `normalize_fallback_csv()`: maps CSV export columns to the same schema and fills missing custom columns with `None`.
 - `utc_now_iso()`: centralized timestamp formatting.
 
 ## extractor/validators.py
 Responsibility: data quality validation.
 Checks:
-- Required schema columns
+- Required schema columns per base (`11` core + custom fields)
 - Nulls in critical columns
 - `data_referencia` inside extraction window
 
@@ -72,12 +72,14 @@ Outputs:
 - `processed/<base>/periodo_<from_date>__<to_date>.json`
 Behavior:
 - Deduplication by `issue_key + updated`.
+- Reindexes outputs using dynamic schema for each base.
 
 ## extractor/sql_server_writer.py
 Responsibility: write extracted records into SQL Server tables per base.
 Main behavior:
 - Creates `jira_<base>` table if it does not exist.
-- Uses Portuguese column names in DB schema.
+- Uses Portuguese column names in DB schema for core fields and canonicalized names for custom fields.
+- Adds missing columns to existing tables via `ALTER TABLE ADD`.
 - Rewrites current period (`periodo_inicio/periodo_fim`) and inserts fresh rows.
 - Verifies row count for data integrity after load.
 

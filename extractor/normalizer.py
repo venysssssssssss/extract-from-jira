@@ -11,7 +11,7 @@ import pandas as pd
 from extractor.business_rules import RULES
 from extractor.domain import BaseName, RecordEnvelope, SourceMode
 from extractor.interfaces import Normalizer
-from extractor.utils import canonicalize
+from extractor.utils import canonicalize, canonicalize_column_name
 
 
 class JiraNormalizer(Normalizer):
@@ -46,6 +46,15 @@ class JiraNormalizer(Normalizer):
             return str(name) if name is not None else None
         return JiraNormalizer._pick_scalar(status)
 
+    @staticmethod
+    def _series_value(series: pd.Series | None, index: int) -> str | None:
+        if series is None:
+            return None
+        value = series.iloc[index]
+        if pd.isna(value):
+            return None
+        return str(value)
+
     def normalize_api_issues(
         self,
         base: BaseName,
@@ -54,7 +63,6 @@ class JiraNormalizer(Normalizer):
         extracted_at_iso: str,
     ) -> RecordEnvelope:
         rule = RULES[base]
-        date_field_id = field_ids[rule.date_field_name]
 
         records: list[dict[str, Any]] = []
         for issue in issues:
@@ -64,21 +72,31 @@ class JiraNormalizer(Normalizer):
             project = fields.get("project")
             issuetype = fields.get("issuetype")
 
-            records.append(
-                {
-                    "issue_key": issue.get("key"),
-                    "summary": self._pick_scalar(fields.get("summary")),
-                    "status": self._status_name(fields),
-                    "created": self._pick_scalar(fields.get("created")),
-                    "updated": self._pick_scalar(fields.get("updated")),
-                    "base_origem": base.value,
-                    "data_referencia": self._pick_scalar(fields.get(date_field_id)),
-                    "espaco": self._pick_scalar(project),
-                    "tipo_ticket": self._pick_scalar(issuetype),
-                    "extracted_at": extracted_at_iso,
-                    "source_mode": SourceMode.API.value,
-                }
-            )
+            record = {
+                "issue_key": issue.get("key"),
+                "summary": self._pick_scalar(fields.get("summary")),
+                "status": self._status_name(fields),
+                "created": self._pick_scalar(fields.get("created")),
+                "updated": self._pick_scalar(fields.get("updated")),
+                "base_origem": base.value,
+                "data_referencia": (
+                    self._pick_scalar(fields.get(field_ids[rule.date_field_name]))
+                    if rule.date_field_name in field_ids
+                    else None
+                ),
+                "espaco": self._pick_scalar(project),
+                "tipo_ticket": self._pick_scalar(issuetype),
+                "extracted_at": extracted_at_iso,
+                "source_mode": SourceMode.API.value,
+            }
+            for field_name in rule.custom_fields:
+                column_name = canonicalize_column_name(field_name)
+                field_id = field_ids.get(field_name)
+                record[column_name] = (
+                    self._pick_scalar(fields.get(field_id)) if field_id else None
+                )
+
+            records.append(record)
 
         return RecordEnvelope(
             base=base, source_mode=SourceMode.API, records=records, raw_issues=issues
@@ -104,38 +122,32 @@ class JiraNormalizer(Normalizer):
         key = pick_column("Issue key", "Chave")
         espaco = pick_column("Espaco", "Espaco - custom", "Project key", "Project")
         tipo = pick_column("Tipo do ticket", "Ticket type", "Issue Type", "Tipo de item")
-
-        data_referencia = (
-            pick_column("DATA FECHOU SALESFORCE")
-            if base is BaseName.ENCERRADAS
-            else (
-                pick_column("DATA ULTIMA ANALISE")
-                if base is BaseName.ANALISADAS
-                else pick_column("DATA DE ABERTURA", "DATA ABERTURA")
-            )
+        rule = RULES[base]
+        data_referencia = pick_column(
+            rule.date_field_name,
+            "DATA ABERTURA" if base is BaseName.INGRESSADAS else rule.date_field_name,
         )
 
         normalized: list[dict[str, Any]] = []
         for index in range(len(df.index)):
-            normalized.append(
-                {
-                    "issue_key": None if key is None else str(key.iloc[index]),
-                    "summary": None if summary is None else str(summary.iloc[index]),
-                    "status": None if status is None else str(status.iloc[index]),
-                    "created": None if created is None else str(created.iloc[index]),
-                    "updated": None if updated is None else str(updated.iloc[index]),
-                    "base_origem": base.value,
-                    "data_referencia": (
-                        None
-                        if data_referencia is None
-                        else str(data_referencia.iloc[index])
-                    ),
-                    "espaco": None if espaco is None else str(espaco.iloc[index]),
-                    "tipo_ticket": None if tipo is None else str(tipo.iloc[index]),
-                    "extracted_at": extracted_at_iso,
-                    "source_mode": SourceMode.PLAYWRIGHT_FALLBACK.value,
-                }
-            )
+            record = {
+                "issue_key": self._series_value(key, index),
+                "summary": self._series_value(summary, index),
+                "status": self._series_value(status, index),
+                "created": self._series_value(created, index),
+                "updated": self._series_value(updated, index),
+                "base_origem": base.value,
+                "data_referencia": self._series_value(data_referencia, index),
+                "espaco": self._series_value(espaco, index),
+                "tipo_ticket": self._series_value(tipo, index),
+                "extracted_at": extracted_at_iso,
+                "source_mode": SourceMode.PLAYWRIGHT_FALLBACK.value,
+            }
+            for field_name in rule.custom_fields:
+                record[canonicalize_column_name(field_name)] = self._series_value(
+                    pick_column(field_name), index
+                )
+            normalized.append(record)
 
         return RecordEnvelope(
             base=base, source_mode=SourceMode.PLAYWRIGHT_FALLBACK, records=normalized

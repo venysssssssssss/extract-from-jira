@@ -7,6 +7,86 @@ from dataclasses import dataclass
 from extractor.domain import BaseName
 
 
+INGRESSADAS_FIELDS = (
+    "DATA DE ABERTURA",
+    "TEMA",
+    "ANALISTA",
+    "DEFINICAO DA ACAO",
+    "ACAO REALIZADA",
+    "ACAO DO RESPONSAVEL",
+    "N DA ORDEM",
+    "DATA INGRESSO ORDEM",
+    "TIPOLOGIA DA ORDEM",
+    "DATA DA ACAO/ ENVIO AREA",
+    "DATA DO RETORNO DA AREA",
+    "DATA FINALIZACAO DA ORDEM",
+    "1 PRAZO POSTERGADO AO CLIENTE",
+    "DATA COMPROMISSO",
+    "DATA ULTIMA ANALISE",
+    "DATA DE ENTRADA",
+    "PRAZO",
+    "DESTINATARIO",
+    "AREA PENDENTE",
+    "DATA ATENDIMENTO COMPROMISSO",
+    "COMPROMISSO GERADO:",
+    "CAUSA RAIZ",
+    "DATA FECHOU SALESFORCE",
+    "ASSUNTO PRINCIPAL",
+)
+
+ANALISADAS_FIELDS = (
+    "Data limite",
+    "1 PRAZO POSTERGADO AO CLIENTE",
+    "TEMA",
+    "OFICIO (somente consultorias)",
+    "PENDENCIA DO CASO",
+    "AREA PENDENTE",
+    "N DA ORDEM",
+    "N ORDEM INGRESSADA (OUV)",
+    "NUMERO DA ORDEM",
+    "Itens associados",
+    "DATA COMPROMISSO",
+    "CAUSA RAIZ",
+    "RESULTADO",
+    "CONTA CONTRATO",
+    "NUMERO DO PONTO DE FORNECIMENTO",
+    "REGIONAL",
+    "ANALISTA",
+    "MUNICIPALIDADE",
+    "RELATO",
+    "DATA ULTIMA ANALISE",
+    "DATA DE ABERTURA",
+)
+
+ENCERRADAS_FIELDS = (
+    "DATA DE ABERTURA",
+    "TEMA",
+    "ANALISTA",
+    "DEFINICAO DA ACAO",
+    "ACAO REALIZADA",
+    "ACAO DO RESPONSAVEL",
+    "N DA ORDEM",
+    "DATA INGRESSO ORDEM",
+    "TIPOLOGIA DA ORDEM",
+    "DATA DA ACAO/ ENVIO AREA",
+    "DATA DO RETORNO DA AREA",
+    "DATA FINALIZACAO DA ORDEM",
+    "1 PRAZO POSTERGADO AO CLIENTE",
+    "DATA COMPROMISSO",
+    "DATA ULTIMA ANALISE",
+    "DATA DE ENTRADA",
+    "PRAZO",
+    "DESTINATARIO",
+    "AREA PENDENTE",
+    "DATA ATENDIMENTO COMPROMISSO",
+    "COMPROMISSO GERADO:",
+    "CAUSA RAIZ",
+    "DATA FECHOU SALESFORCE",
+    "ASSUNTO PRINCIPAL",
+    "FaixaDiasUteis_Simples",
+)
+
+
 @dataclass(frozen=True)
 class BaseRule:
     """Describes a single extraction base and its filtering constraints."""
@@ -16,6 +96,13 @@ class BaseRule:
     filter_id: int
     date_field_name: str
     date_jql_name: str
+    custom_fields: tuple[str, ...]
+
+
+def all_required_field_names() -> set[str]:
+    """Return the union of all Jira custom fields required by the pipeline."""
+
+    return {field_name for rule in RULES.values() for field_name in rule.custom_fields}
 
 RULES: dict[BaseName, BaseRule] = {
     BaseName.ENCERRADAS: BaseRule(
@@ -24,13 +111,15 @@ RULES: dict[BaseName, BaseRule] = {
         filter_id=10719,
         date_field_name="DATA FECHOU SALESFORCE",
         date_jql_name="data fechou salesforce[date]",
+        custom_fields=ENCERRADAS_FIELDS,
     ),
     BaseName.ANALISADAS: BaseRule(
         base=BaseName.ANALISADAS,
         filter_url="https://ouvid.atlassian.net/issues/?filter=10720",
         filter_id=10720,
-        date_field_name="DATA ÚLTIMA ANÁLISE",
+        date_field_name="DATA ULTIMA ANALISE",
         date_jql_name="data última análise[date]",
+        custom_fields=ANALISADAS_FIELDS,
     ),
     BaseName.INGRESSADAS: BaseRule(
         base=BaseName.INGRESSADAS,
@@ -38,11 +127,8 @@ RULES: dict[BaseName, BaseRule] = {
         filter_id=10721,
         date_field_name="DATA DE ABERTURA",
         date_jql_name="data de abertura[date]",
+        custom_fields=INGRESSADAS_FIELDS,
     ),
 }
 
-REQUIRED_FIELD_NAMES = (
-    "DATA FECHOU SALESFORCE",
-    "DATA ÚLTIMA ANÁLISE",
-    "DATA DE ABERTURA",
-)
+REQUIRED_FIELD_NAMES = tuple(sorted(all_required_field_names()))

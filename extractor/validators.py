@@ -6,9 +6,12 @@ from datetime import date
 
 import pandas as pd
 
+from extractor.business_rules import RULES
+from extractor.domain import BaseName
 from extractor.exceptions import ValidationError
+from extractor.utils import canonicalize_column_name
 
-REQUIRED_COLUMNS = (
+CORE_COLUMNS = (
     "issue_key",
     "summary",
     "status",
@@ -23,15 +26,26 @@ REQUIRED_COLUMNS = (
 )
 
 
+def get_required_columns(base: BaseName) -> tuple[str, ...]:
+    """Return ordered schema for the given base."""
+
+    custom_columns = tuple(
+        canonicalize_column_name(field_name)
+        for field_name in RULES[base].custom_fields
+    )
+    return tuple(dict.fromkeys((*CORE_COLUMNS, *custom_columns)))
+
+
 def validate_records(
-    records: list[dict[str, object]], from_date: date, to_date: date
+    records: list[dict[str, object]], base: BaseName, from_date: date, to_date: date
 ) -> None:
     """Validate schema and date window for normalized records."""
 
     if not records:
         return
 
-    missing_columns = [col for col in REQUIRED_COLUMNS if col not in records[0]]
+    required_columns = get_required_columns(base)
+    missing_columns = [col for col in required_columns if col not in records[0]]
     if missing_columns:
         raise ValidationError(f"Missing required columns: {', '.join(missing_columns)}")
 

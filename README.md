@@ -24,7 +24,7 @@ Decisões fixas deste projeto:
 4. Consultar issues via API com paginação (`startAt`, `maxResults`).
 5. Persistir:
    - bruto (`jsonl`)
-   - normalizado (`csv` e `parquet`)
+   - normalizado (`csv` e `parquet`) com schema dinâmico por base
 6. Validar qualidade de dados (schema, datas, volume mínimo quando aplicável).
 7. Registrar auditoria da execução.
 8. Em falha de API (após retry), acionar Playwright para exportação via UI e padronizar no mesmo contrato de dados.
@@ -213,6 +213,10 @@ Para cada base e período de execução (`from_date`..`to_date`):
   - `processed/<base>/<from_date>__<to_date>.csv`
   - `processed/<base>/<from_date>__<to_date>.parquet`
   - `processed/<base>/periodo_<from_date>__<to_date>.json`
+  - Cada base mantém as 11 colunas core do sistema e adiciona suas colunas custom de negócio.
+  - `ingressadas`: 35 colunas totais (11 core + 24 custom)
+  - `analisadas`: 32 colunas totais (11 core + 21 custom)
+  - `encerradas`: 36 colunas totais (11 core + 25 custom)
 
 ### 7.6 Idempotência
 Chave técnica recomendada:
@@ -249,10 +253,12 @@ Após persistir os arquivos em `output/processed`, a aplicação:
    - `dbo.jira_encerradas`
    - `dbo.jira_analisadas`
    - `dbo.jira_ingressadas`
-3. Mantém colunas em português na base de dados:
+3. Mantém colunas core em português na base de dados:
    - `chave_ticket`, `resumo`, `status`, `data_criacao`, `data_atualizacao`, `base_origem`,
    - `data_referencia`, `espaco`, `tipo_ticket`, `extraido_em`, `modo_origem`,
    - `periodo_inicio`, `periodo_fim`, `carga_em`
+4. Adiciona automaticamente colunas custom por base usando nomes canonicalizados (ex.: `data_fechou_salesforce`, `tema`, `faixa_dias_uteis_simples`).
+5. Em tabelas já existentes, novas colunas são criadas com `ALTER TABLE ADD` sem apagar dados antigos.
 4. Reescreve o período atual (`DELETE` por `periodo_inicio/periodo_fim`) e insere os dados novos.
 5. Valida veracidade comparando contagem inserida vs contagem existente no período.
 

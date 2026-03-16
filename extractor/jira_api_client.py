@@ -13,7 +13,6 @@ from extractor.exceptions import (
     ApiAuthError,
     ApiSchemaError,
     ApiTransientError,
-    ConfigurationError,
     ExtractionError,
 )
 from extractor.interfaces import JiraGateway
@@ -143,9 +142,7 @@ class JiraApiClient(JiraGateway):
             name_map[name] = indexed[key]
 
         if missing:
-            raise ConfigurationError(
-                f"Could not resolve Jira field ids for: {', '.join(missing)}"
-            )
+            LOGGER.warning("jira_field_ids_missing fields=%s", ",".join(sorted(missing)))
         return name_map
 
     def search_issues(

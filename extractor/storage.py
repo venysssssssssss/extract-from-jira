@@ -11,7 +11,7 @@ import pandas as pd
 
 from extractor.domain import BaseName
 from extractor.interfaces import StorageGateway
-from extractor.validators import REQUIRED_COLUMNS
+from extractor.validators import get_required_columns
 
 
 class FileStorage(StorageGateway):
@@ -51,13 +51,14 @@ class FileStorage(StorageGateway):
     ) -> dict[str, Path]:
         processed_dir = self._root / "processed" / base.value
         processed_dir.mkdir(parents=True, exist_ok=True)
+        required_columns = get_required_columns(base)
 
         frame = pd.DataFrame.from_records(records)
         if frame.empty:
-            frame = pd.DataFrame(columns=REQUIRED_COLUMNS)
+            frame = pd.DataFrame(columns=required_columns)
         else:
             frame = frame.drop_duplicates(subset=["issue_key", "updated"], keep="last")
-            frame = frame.reindex(columns=REQUIRED_COLUMNS)
+            frame = frame.reindex(columns=required_columns)
 
         outputs: dict[str, Path] = {}
         period_token = self._period_token(from_date, to_date)

@@ -2,16 +2,27 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 
+from extractor.business_rules import RULES
 from extractor.domain import BaseName
 from extractor.exceptions import DatabaseWriteError
+from extractor.utils import canonicalize_column_name
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class ColumnDef:
+    sql_name: str
+    sql_type: str
+    record_key: str
+    converter: Callable[[Any], Any]
 
 
 class SqlServerWriter:
@@ -48,18 +59,22 @@ class SqlServerWriter:
             raise DatabaseWriteError(f"Unsafe SQL identifier: {value!r}")
         return value
 
+    def _table_name(self, base: BaseName) -> str:
+        return self._safe_identifier(f"jira_{base.value}")
+
     def _qualified_table(self, base: BaseName) -> str:
         schema = self._safe_identifier(self._schema)
-        table = self._safe_identifier(f"jira_{base.value}")
+        table = self._table_name(base)
         return f"[{schema}].[{table}]"
+
+    def _quoted_identifier(self, value: str) -> str:
+        return f"[{self._safe_identifier(value)}]"
 
     def _connection_string(self) -> str:
         encrypt = "yes" if self._encrypt else "no"
         trust = "yes" if self._trust_server_certificate else "no"
         server = self._server
         if self._port:
-            # When a TCP port is explicit, resolve SERVER as host,port.
-            # This avoids named-instance resolution via SQL Browser.
             host = self._server.split("\\", maxsplit=1)[0]
             server = f"{host},{self._port}"
         return (
@@ -130,11 +145,136 @@ class SqlServerWriter:
         text = str(value).strip()
         return text if text else None
 
+    @staticmethod
+    def _identity(value: Any) -> Any:
+        return value
+
+    def _get_column_defs(self, base: BaseName) -> list[ColumnDef]:
+        core_defs = [
+            ColumnDef("chave_ticket", "NVARCHAR(128) NOT NULL", "issue_key", self._normalize_text),
+            ColumnDef("resumo", "NVARCHAR(4000) NULL", "summary", self._normalize_text),
+            ColumnDef("status", "NVARCHAR(255) NULL", "status", self._normalize_text),
+            ColumnDef("data_criacao", "DATETIME2 NULL", "created", self._to_datetime),
+            ColumnDef(
+                "data_atualizacao",
+                "DATETIME2 NOT NULL",
+                "__resolved_updated__",
+                self._identity,
+            ),
+            ColumnDef("base_origem", "NVARCHAR(64) NOT NULL", "base_origem", self._normalize_text),
+            ColumnDef("data_referencia", "DATE NULL", "data_referencia", self._to_date),
+            ColumnDef("espaco", "NVARCHAR(255) NULL", "espaco", self._normalize_text),
+            ColumnDef("tipo_ticket", "NVARCHAR(255) NULL", "tipo_ticket", self._normalize_text),
+            ColumnDef(
+                "extraido_em",
+                "DATETIME2 NOT NULL",
+                "__resolved_extracted_at__",
+                self._identity,
+            ),
+            ColumnDef("modo_origem", "NVARCHAR(64) NOT NULL", "source_mode", self._normalize_text),
+            ColumnDef("periodo_inicio", "DATE NOT NULL", "__from_date__", self._identity),
+            ColumnDef("periodo_fim", "DATE NOT NULL", "__to_date__", self._identity),
+        ]
+        custom_defs = [
+            ColumnDef(
+                canonicalize_column_name(field_name),
+                "NVARCHAR(4000) NULL",
+                canonicalize_column_name(field_name),
+                self._normalize_text,
+            )
+            for field_name in RULES[base].custom_fields
+        ]
+        return [*core_defs, *custom_defs]
+
+    def _build_create_table_sql(self, base: BaseName, column_defs: list[ColumnDef]) -> str:
+        table = self._qualified_table(base)
+        table_name = self._table_name(base)
+        column_lines = [
+            f"        {self._quoted_identifier(column.sql_name)} {column.sql_type}"
+            for column in column_defs
+        ]
+        column_lines.extend(
+            [
+                (
+                    f"        [carga_em] DATETIME2 NOT NULL CONSTRAINT "
+                    f"DF_{table_name}_carga_em DEFAULT SYSUTCDATETIME()"
+                ),
+                (
+                    f"        CONSTRAINT PK_{table_name} PRIMARY KEY "
+                    f"([chave_ticket], [data_atualizacao])"
+                ),
+            ]
+        )
+        joined_columns = ",\n".join(column_lines)
+        return (
+            f"IF OBJECT_ID(N'{table}', N'U') IS NULL\n"
+            f"BEGIN\n"
+            f"    CREATE TABLE {table} (\n"
+            f"{joined_columns}\n"
+            f"    );\n"
+            f"END"
+        )
+
+    def _fetch_existing_columns(self, cursor: Any, base: BaseName) -> set[str]:
+        cursor.execute(
+            """
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+""",
+            (self._schema, self._table_name(base)),
+        )
+        return {
+            str(row[0]).strip().lower()
+            for row in cursor.fetchall()
+            if row and row[0] is not None
+        }
+
+    def _migrate_schema(
+        self, cursor: Any, base: BaseName, column_defs: list[ColumnDef]
+    ) -> None:
+        existing_columns = self._fetch_existing_columns(cursor, base)
+        table = self._qualified_table(base)
+        for column in column_defs:
+            if column.sql_name.lower() in existing_columns:
+                continue
+            cursor.execute(
+                f"ALTER TABLE {table} ADD {self._quoted_identifier(column.sql_name)} {column.sql_type};"
+            )
+
+    def _build_delete_sql(self, base: BaseName) -> str:
+        return (
+            f"DELETE FROM {self._qualified_table(base)} "
+            f"WHERE [periodo_inicio] = ? AND [periodo_fim] = ?;"
+        )
+
+    def _build_insert_sql(self, base: BaseName, column_defs: list[ColumnDef]) -> str:
+        columns_sql = ",\n    ".join(
+            self._quoted_identifier(column.sql_name) for column in column_defs
+        )
+        placeholders = ", ".join("?" for _ in column_defs)
+        return (
+            f"INSERT INTO {self._qualified_table(base)} (\n"
+            f"    {columns_sql}\n"
+            f") VALUES ({placeholders})"
+        )
+
+    def _build_count_sql(self, base: BaseName) -> str:
+        return (
+            f"SELECT COUNT(1) FROM {self._qualified_table(base)} "
+            f"WHERE [periodo_inicio] = ? AND [periodo_fim] = ?;"
+        )
+
     def _build_rows(
-        self, records: list[dict[str, Any]], from_date: date, to_date: date
+        self,
+        base: BaseName,
+        records: list[dict[str, Any]],
+        from_date: date,
+        to_date: date,
     ) -> list[tuple]:
         """Convert normalized record dictionaries into DB tuples."""
 
+        column_defs = self._get_column_defs(base)
         dedup: dict[tuple[str, datetime], tuple] = {}
         for item in records:
             chave_ticket = self._normalize_text(item.get("issue_key"))
@@ -148,21 +288,17 @@ class SqlServerWriter:
                 or self._to_datetime(item.get("extracted_at"))
                 or datetime.utcnow()
             )
+            resolved_extracted_at = self._to_datetime(item.get("extracted_at")) or datetime.utcnow()
+            row_source = {
+                **item,
+                "__resolved_updated__": data_atualizacao,
+                "__resolved_extracted_at__": resolved_extracted_at,
+                "__from_date__": from_date,
+                "__to_date__": to_date,
+            }
             key = (chave_ticket, data_atualizacao)
-            dedup[key] = (
-                chave_ticket,
-                self._normalize_text(item.get("summary")),
-                self._normalize_text(item.get("status")),
-                data_criacao,
-                data_atualizacao,
-                self._normalize_text(item.get("base_origem")),
-                self._to_date(item.get("data_referencia")),
-                self._normalize_text(item.get("espaco")),
-                self._normalize_text(item.get("tipo_ticket")),
-                self._to_datetime(item.get("extracted_at")) or datetime.utcnow(),
-                self._normalize_text(item.get("source_mode")),
-                from_date,
-                to_date,
+            dedup[key] = tuple(
+                column.converter(row_source.get(column.record_key)) for column in column_defs
             )
         return list(dedup.values())
 
@@ -174,58 +310,14 @@ class SqlServerWriter:
         to_date: date,
         records: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        rows = self._build_rows(records, from_date, to_date)
+        column_defs = self._get_column_defs(base)
+        rows = self._build_rows(base, records, from_date, to_date)
         table = self._qualified_table(base)
 
-        if not rows:
-            LOGGER.info("db_upsert_skipped_no_rows base=%s", base.value)
-            return {"table": table, "inserted_rows": 0, "period_count": 0}
-
-        create_sql = f"""
-IF OBJECT_ID(N'{table}', N'U') IS NULL
-BEGIN
-    CREATE TABLE {table} (
-        chave_ticket NVARCHAR(128) NOT NULL,
-        resumo NVARCHAR(4000) NULL,
-        status NVARCHAR(255) NULL,
-        data_criacao DATETIME2 NULL,
-        data_atualizacao DATETIME2 NOT NULL,
-        base_origem NVARCHAR(64) NOT NULL,
-        data_referencia DATE NULL,
-        espaco NVARCHAR(255) NULL,
-        tipo_ticket NVARCHAR(255) NULL,
-        extraido_em DATETIME2 NOT NULL,
-        modo_origem NVARCHAR(64) NOT NULL,
-        periodo_inicio DATE NOT NULL,
-        periodo_fim DATE NOT NULL,
-        carga_em DATETIME2 NOT NULL CONSTRAINT DF_{base.value}_carga_em DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT PK_{base.value}_jira PRIMARY KEY (chave_ticket, data_atualizacao)
-    );
-END
-"""
-        delete_sql = (
-            f"DELETE FROM {table} WHERE periodo_inicio = ? AND periodo_fim = ?;"
-        )
-        insert_sql = f"""
-INSERT INTO {table} (
-    chave_ticket,
-    resumo,
-    status,
-    data_criacao,
-    data_atualizacao,
-    base_origem,
-    data_referencia,
-    espaco,
-    tipo_ticket,
-    extraido_em,
-    modo_origem,
-    periodo_inicio,
-    periodo_fim
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-"""
-        count_sql = (
-            f"SELECT COUNT(1) FROM {table} WHERE periodo_inicio = ? AND periodo_fim = ?;"
-        )
+        create_sql = self._build_create_table_sql(base, column_defs)
+        delete_sql = self._build_delete_sql(base)
+        insert_sql = self._build_insert_sql(base, column_defs)
+        count_sql = self._build_count_sql(base)
 
         try:
             import pyodbc
@@ -238,6 +330,11 @@ INSERT INTO {table} (
             with pyodbc.connect(self._connection_string(), autocommit=False) as conn:
                 cursor = conn.cursor()
                 cursor.execute(create_sql)
+                self._migrate_schema(cursor, base, column_defs)
+                if not rows:
+                    conn.commit()
+                    LOGGER.info("db_upsert_skipped_no_rows base=%s", base.value)
+                    return {"table": table, "inserted_rows": 0, "period_count": 0}
                 cursor.execute(delete_sql, (from_date, to_date))
                 cursor.fast_executemany = True
                 cursor.executemany(insert_sql, rows)

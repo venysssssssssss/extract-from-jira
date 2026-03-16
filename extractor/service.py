@@ -9,7 +9,7 @@ from hashlib import sha256
 from pathlib import Path
 from uuid import uuid4
 
-from extractor.business_rules import REQUIRED_FIELD_NAMES, RULES
+from extractor.business_rules import RULES, all_required_field_names
 from extractor.domain import BaseExecutionResult, BaseName, ExtractionWindow
 from extractor.exceptions import (
     ApiAuthError,
@@ -31,6 +31,7 @@ from extractor.normalizer import utc_now_iso
 from extractor.validators import validate_records
 
 LOGGER = logging.getLogger(__name__)
+CORE_API_FIELDS = ("summary", "status", "created", "updated", "project", "issuetype")
 
 
 class ExtractionService:
@@ -88,7 +89,7 @@ class ExtractionService:
         if mode == "api-first" and self._clean_output_on_api_run:
             self._cleanup_output_for_bases(bases)
 
-        field_ids = self._jira.resolve_field_ids(REQUIRED_FIELD_NAMES)
+        field_ids = self._jira.resolve_field_ids(tuple(sorted(all_required_field_names())))
 
         results: list[BaseExecutionResult] = []
         for base in bases:
@@ -151,18 +152,8 @@ class ExtractionService:
         started_at: datetime,
     ) -> BaseExecutionResult:
         rule = RULES[base]
-        date_field_id = field_ids[rule.date_field_name]
         jql = build_jql(rule, self._resolve_window(from_date, to_date))
-
-        fields = (
-            "summary",
-            "status",
-            "created",
-            "updated",
-            "project",
-            "issuetype",
-            date_field_id,
-        )
+        fields = self._build_api_fields(base, field_ids)
 
         issues = self._jira.search_issues(
             jql=jql, fields=fields, max_results=self._max_results
@@ -174,7 +165,9 @@ class ExtractionService:
             field_ids=field_ids,
             extracted_at_iso=utc_now_iso(),
         )
-        validate_records(envelope.records, from_date=from_date, to_date=to_date)
+        validate_records(
+            envelope.records, base=base, from_date=from_date, to_date=to_date
+        )
 
         raw_path = self._storage.persist_raw(
             base=base, from_date=from_date, to_date=to_date, issues=envelope.raw_issues
@@ -256,7 +249,9 @@ class ExtractionService:
             csv_path=csv_path,
             extracted_at_iso=utc_now_iso(),
         )
-        validate_records(envelope.records, from_date=from_date, to_date=to_date)
+        validate_records(
+            envelope.records, base=base, from_date=from_date, to_date=to_date
+        )
 
         processed = self._storage.persist_processed(
             base=base,
@@ -327,6 +322,29 @@ class ExtractionService:
         if from_date or to_date:
             raise ValueError("Both --from and --to must be provided together")
         return self._default_window_factory()
+
+    def _build_api_fields(
+        self, base: BaseName, field_ids: dict[str, str]
+    ) -> tuple[str, ...]:
+        rule = RULES[base]
+        resolved_custom_fields: list[str] = []
+        missing_fields: list[str] = []
+
+        for field_name in rule.custom_fields:
+            field_id = field_ids.get(field_name)
+            if field_id is None:
+                missing_fields.append(field_name)
+                continue
+            resolved_custom_fields.append(field_id)
+
+        if missing_fields:
+            LOGGER.warning(
+                "base_custom_fields_missing_ids base=%s fields=%s",
+                base.value,
+                ",".join(sorted(missing_fields)),
+            )
+
+        return tuple(dict.fromkeys((*CORE_API_FIELDS, *resolved_custom_fields)))
 
     def _cleanup_output_for_bases(self, bases: list[BaseName]) -> None:
         """Remove base-specific output folders before API extraction run."""
