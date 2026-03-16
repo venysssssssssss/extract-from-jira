@@ -6,6 +6,23 @@ from dataclasses import dataclass
 
 from extractor.domain import BaseName
 
+DATE_CUSTOM_FIELD_NAMES = frozenset(
+    {
+        "DATA DE ABERTURA",
+        "DATA INGRESSO ORDEM",
+        "DATA DA ACAO/ ENVIO AREA",
+        "DATA DO RETORNO DA AREA",
+        "DATA FINALIZACAO DA ORDEM",
+        "1 PRAZO POSTERGADO AO CLIENTE",
+        "DATA COMPROMISSO",
+        "DATA ULTIMA ANALISE",
+        "DATA DE ENTRADA",
+        "DATA ATENDIMENTO COMPROMISSO",
+        "DATA FECHOU SALESFORCE",
+        "Data limite",
+    }
+)
+
 
 INGRESSADAS_FIELDS = (
     "DATA DE ABERTURA",
@@ -103,6 +120,12 @@ def all_required_field_names() -> set[str]:
     """Return the union of all Jira custom fields required by the pipeline."""
 
     return {field_name for rule in RULES.values() for field_name in rule.custom_fields}
+
+
+def custom_field_is_date(field_name: str) -> bool:
+    """Return whether a custom field must be stored as SQL DATE."""
+
+    return field_name in DATE_CUSTOM_FIELD_NAMES
 
 RULES: dict[BaseName, BaseRule] = {
     BaseName.ENCERRADAS: BaseRule(

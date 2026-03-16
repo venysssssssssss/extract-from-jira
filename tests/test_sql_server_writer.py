@@ -41,6 +41,7 @@ def test_build_create_table_sql_contains_dynamic_custom_columns() -> None:
 
     assert "[resumo] NVARCHAR(MAX) NULL" in create_sql
     assert "[tema] NVARCHAR(MAX) NULL" in create_sql
+    assert "[data_fechou_salesforce] DATE NULL" in create_sql
     assert "[faixa_dias_uteis_simples] NVARCHAR(MAX) NULL" in create_sql
     assert "PRIMARY KEY ([chave_ticket], [data_atualizacao])" in create_sql
 
@@ -62,7 +63,7 @@ def test_migrate_schema_adds_missing_columns() -> None:
         sql for sql, _params in cursor.execute_calls if sql.startswith("ALTER TABLE")
     ]
 
-    assert any("ADD [data_limite] NVARCHAR(MAX) NULL" in sql for sql in alter_statements)
+    assert any("ADD [data_limite] DATE NULL" in sql for sql in alter_statements)
     assert any("ADD [relato] NVARCHAR(MAX) NULL" in sql for sql in alter_statements)
 
 
@@ -88,6 +89,29 @@ def test_migrate_schema_alters_existing_nvarchar_4000_to_max() -> None:
     assert any("ALTER COLUMN [relato] NVARCHAR(MAX) NULL" in sql for sql in alter_statements)
 
 
+def test_migrate_schema_sanitizes_and_alters_existing_text_date_columns() -> None:
+    writer = _writer()
+    cursor = FakeCursor(
+        existing_columns=[
+            ("chave_ticket", "nvarchar", 128),
+            ("data_fechou_salesforce", "nvarchar", 4000),
+        ]
+    )
+    column_defs = writer._get_column_defs(BaseName.ENCERRADAS)
+
+    writer._migrate_schema(cursor, BaseName.ENCERRADAS, column_defs)
+
+    executed_sql = [sql for sql, _params in cursor.execute_calls]
+
+    assert any(
+        "UPDATE [dbo].[jira_encerradas] SET [data_fechou_salesforce] = NULL" in sql
+        for sql in executed_sql
+    )
+    assert any(
+        "ALTER COLUMN [data_fechou_salesforce] DATE NULL" in sql for sql in executed_sql
+    )
+
+
 def test_build_rows_includes_dynamic_custom_values() -> None:
     writer = _writer()
     rows = writer._build_rows(
@@ -106,6 +130,7 @@ def test_build_rows_includes_dynamic_custom_values() -> None:
                 "extracted_at": "2026-03-03T10:00:00+00:00",
                 "source_mode": "api",
                 "tema": "Tema X",
+                "data_fechou_salesforce": "2026-03-01",
                 "faixa_dias_uteis_simples": "5",
             }
         ],
@@ -116,6 +141,7 @@ def test_build_rows_includes_dynamic_custom_values() -> None:
     assert len(rows) == 1
     assert "Tema X" in rows[0]
     assert "5" in rows[0]
+    assert date(2026, 3, 1) in rows[0]
 
 
 def test_has_large_text_payload_detects_values_over_4000_chars() -> None:

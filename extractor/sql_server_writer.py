@@ -9,7 +9,7 @@ from typing import Any, Callable
 
 import pandas as pd
 
-from extractor.business_rules import RULES
+from extractor.business_rules import RULES, custom_field_is_date
 from extractor.domain import BaseName
 from extractor.exceptions import DatabaseWriteError
 from extractor.utils import canonicalize_column_name
@@ -178,9 +178,9 @@ class SqlServerWriter:
         custom_defs = [
             ColumnDef(
                 canonicalize_column_name(field_name),
-                "NVARCHAR(MAX) NULL",
+                "DATE NULL" if custom_field_is_date(field_name) else "NVARCHAR(MAX) NULL",
                 canonicalize_column_name(field_name),
-                self._normalize_text,
+                self._to_date if custom_field_is_date(field_name) else self._normalize_text,
             )
             for field_name in RULES[base].custom_fields
         ]
@@ -267,6 +267,13 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
                 continue
             if self._column_supports_expected_type(existing, column.sql_type):
                 continue
+            if column.sql_type.strip().lower().startswith("date"):
+                cursor.execute(
+                    f"UPDATE {table} "
+                    f"SET {self._quoted_identifier(column.sql_name)} = NULL "
+                    f"WHERE {self._quoted_identifier(column.sql_name)} IS NOT NULL "
+                    f"AND TRY_CONVERT(date, {self._quoted_identifier(column.sql_name)}) IS NULL;"
+                )
             cursor.execute(
                 f"ALTER TABLE {table} ALTER COLUMN {self._quoted_identifier(column.sql_name)} {column.sql_type};"
             )
