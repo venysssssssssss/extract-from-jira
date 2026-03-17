@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS base
+FROM python:3.11-slim-bookworm AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -22,8 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN set -eux; \
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg; \
-    . /etc/os-release; \
-    curl -fsSL "https://packages.microsoft.com/config/debian/${VERSION_ID}/prod.list" | \
+    curl -fsSL "https://packages.microsoft.com/config/debian/12/prod.list" | \
         sed 's#deb https://#deb [signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://#' \
         > /etc/apt/sources.list.d/mssql-release.list; \
     apt-get update; \
