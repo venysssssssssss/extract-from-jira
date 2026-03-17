@@ -26,7 +26,7 @@ COPY extractor /app/extractor
 COPY api /app/api
 COPY docker /app/docker
 
-RUN chmod +x /app/docker/run-scheduled-extraction.sh /app/docker/start-scheduler.sh \
+RUN chmod +x /app/docker/run-scheduled-extraction.sh /app/docker/start-scheduler.sh /app/docker/start-api.sh \
     && chmod 0644 /app/docker/jira-extractor.cron \
     && cp /app/docker/jira-extractor.cron /etc/cron.d/jira-extractor \
     && crontab /etc/cron.d/jira-extractor
@@ -36,4 +36,4 @@ RUN chmod +x /app/docker/run-scheduled-extraction.sh /app/docker/start-scheduler
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/docker/start-api.sh"]
