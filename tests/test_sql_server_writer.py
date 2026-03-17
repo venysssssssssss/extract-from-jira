@@ -65,6 +65,7 @@ def test_migrate_schema_adds_missing_columns() -> None:
 
     assert any("ADD [data_limite] DATE NULL" in sql for sql in alter_statements)
     assert any("ADD [relato] NVARCHAR(MAX) NULL" in sql for sql in alter_statements)
+    assert any("ADD [numero_de_caso_pai] NVARCHAR(MAX) NULL" in sql for sql in alter_statements)
 
 
 def test_migrate_schema_alters_existing_nvarchar_4000_to_max() -> None:
@@ -149,3 +150,11 @@ def test_has_large_text_payload_detects_values_over_4000_chars() -> None:
 
     assert writer._has_large_text_payload([("a" * 4001,)]) is True
     assert writer._has_large_text_payload([("ok", 1, None)]) is False
+
+
+def test_build_delete_sql_wipes_entire_table() -> None:
+    writer = _writer()
+
+    delete_sql = writer._build_delete_sql(BaseName.ANALISADAS)
+
+    assert delete_sql == "DELETE FROM [dbo].[jira_analisadas];"

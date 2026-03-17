@@ -55,6 +55,7 @@ ANALISADAS_FIELDS = (
     "Data limite",
     "1 PRAZO POSTERGADO AO CLIENTE",
     "TEMA",
+    "NÚMERO DE CASO PAI",
     "OFICIO (somente consultorias)",
     "PENDENCIA DO CASO",
     "AREA PENDENTE",

@@ -9,10 +9,11 @@ def test_all_required_field_names_covers_all_base_custom_fields() -> None:
     field_names = all_required_field_names()
 
     assert len(RULES[BaseName.INGRESSADAS].custom_fields) == 24
-    assert len(RULES[BaseName.ANALISADAS].custom_fields) == 21
+    assert len(RULES[BaseName.ANALISADAS].custom_fields) == 22
     assert len(RULES[BaseName.ENCERRADAS].custom_fields) == 25
     assert "TEMA" in field_names
     assert "FaixaDiasUteis_Simples" in field_names
+    assert "NÚMERO DE CASO PAI" in field_names
 
 
 def test_canonicalized_custom_field_names_do_not_collide() -> None:

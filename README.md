@@ -215,7 +215,7 @@ Para cada base e período de execução (`from_date`..`to_date`):
   - `processed/<base>/periodo_<from_date>__<to_date>.json`
   - Cada base mantém as 11 colunas core do sistema e adiciona suas colunas custom de negócio.
   - `ingressadas`: 35 colunas totais (11 core + 24 custom)
-  - `analisadas`: 32 colunas totais (11 core + 21 custom)
+  - `analisadas`: 33 colunas totais (11 core + 22 custom)
   - `encerradas`: 36 colunas totais (11 core + 25 custom)
 
 ### 7.6 Idempotência
@@ -258,7 +258,8 @@ Após persistir os arquivos em `output/processed`, a aplicação:
    - `data_referencia`, `espaco`, `tipo_ticket`, `extraido_em`, `modo_origem`,
    - `periodo_inicio`, `periodo_fim`, `carga_em`
 4. Adiciona automaticamente colunas custom por base usando nomes canonicalizados (ex.: `data_fechou_salesforce`, `tema`, `faixa_dias_uteis_simples`).
-5. Em tabelas já existentes, novas colunas são criadas com `ALTER TABLE ADD` sem apagar dados antigos.
+5. Em tabelas já existentes, novas colunas são criadas com `ALTER TABLE ADD`.
+6. A cada run, a tabela da base processada é limpa integralmente e recarregada com a extração atual.
 4. Reescreve o período atual (`DELETE` por `periodo_inicio/periodo_fim`) e insere os dados novos.
 5. Valida veracidade comparando contagem inserida vs contagem existente no período.
 

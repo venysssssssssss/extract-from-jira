@@ -80,7 +80,7 @@ Main behavior:
 - Creates `jira_<base>` table if it does not exist.
 - Uses Portuguese column names in DB schema for core fields and canonicalized names for custom fields.
 - Adds missing columns to existing tables via `ALTER TABLE ADD`.
-- Rewrites current period (`periodo_inicio/periodo_fim`) and inserts fresh rows.
+- Performs full refresh per table on each run before inserting fresh rows.
 - Verifies row count for data integrity after load.
 
 ## extractor/audit.py

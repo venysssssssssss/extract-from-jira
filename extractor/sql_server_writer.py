@@ -279,10 +279,7 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
             )
 
     def _build_delete_sql(self, base: BaseName) -> str:
-        return (
-            f"DELETE FROM {self._qualified_table(base)} "
-            f"WHERE [periodo_inicio] = ? AND [periodo_fim] = ?;"
-        )
+        return f"DELETE FROM {self._qualified_table(base)};"
 
     def _build_insert_sql(self, base: BaseName, column_defs: list[ColumnDef]) -> str:
         columns_sql = ",\n    ".join(
@@ -296,10 +293,7 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
         )
 
     def _build_count_sql(self, base: BaseName) -> str:
-        return (
-            f"SELECT COUNT(1) FROM {self._qualified_table(base)} "
-            f"WHERE [periodo_inicio] = ? AND [periodo_fim] = ?;"
-        )
+        return f"SELECT COUNT(1) FROM {self._qualified_table(base)};"
 
     @staticmethod
     def _has_large_text_payload(rows: list[tuple]) -> bool:
@@ -375,18 +369,18 @@ WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
                 cursor = conn.cursor()
                 cursor.execute(create_sql)
                 self._migrate_schema(cursor, base, column_defs)
+                cursor.execute(delete_sql)
                 if not rows:
                     conn.commit()
                     LOGGER.info("db_upsert_skipped_no_rows base=%s", base.value)
                     return {"table": table, "inserted_rows": 0, "period_count": 0}
-                cursor.execute(delete_sql, (from_date, to_date))
                 if self._has_large_text_payload(rows):
                     for row in rows:
                         cursor.execute(insert_sql, row)
                 else:
                     cursor.fast_executemany = True
                     cursor.executemany(insert_sql, rows)
-                cursor.execute(count_sql, (from_date, to_date))
+                cursor.execute(count_sql)
                 period_count = int(cursor.fetchone()[0])
                 if period_count != len(rows):
                     raise DatabaseWriteError(
