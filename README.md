@@ -589,6 +589,7 @@ Observações:
 - O serviço `jira-extractor-scheduler` executa as extrações em `08:00`, `11:00`, `14:00` e `17:00` no horário de Brasília.
 - Artefatos de saída são persistidos no volume `./output`.
 - O arquivo local `.env` é montado como `/app/.env` para que CLI e API leiam a mesma configuração.
+- A imagem instala `unixODBC` e `msodbcsql18`, necessários quando `DB_ENABLED=true`.
 
 ### 19.1 Deploy em Ubuntu Server
 No servidor:

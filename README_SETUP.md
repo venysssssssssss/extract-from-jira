@@ -196,6 +196,7 @@ Scheduler em produção:
 - O serviço `jira-extractor-scheduler` roda no mesmo `docker compose`.
 - Agenda fixa: `08:00`, `11:00`, `14:00`, `17:00`.
 - Timezone: `America/Sao_Paulo`.
+- A imagem já inclui `unixODBC` e `msodbcsql18` para suportar `pyodbc` no runtime.
 
 Logs:
 ```bash
