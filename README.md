@@ -354,14 +354,26 @@ output/
 ## 11) Operação Diária e Agendamento
 
 ### 11.1 Frequência recomendada
-- 1 execução diária.
+- 4 execuções diárias.
 
-### 11.2 Exemplo com `cron`
-Executar todos os dias às 06:10 (timezone do servidor):
+### 11.2 Agendamento em Docker
+O projeto possui um serviço dedicado de agendamento no `docker compose`.
+Horários fixos:
+- `08:00`
+- `11:00`
+- `14:00`
+- `17:00`
 
-```cron
-10 6 * * * cd /caminho/projeto && poetry run extractor-run --base all --mode api-first --format csv,parquet >> output/logs/cron.log 2>&1
+Timezone:
+- `America/Sao_Paulo` (horário de Brasília)
+
+Comando executado em cada trigger:
+
+```bash
+python -m extractor.run --base all --mode api-first --format csv,parquet
 ```
+
+O scheduler usa `flock` para evitar sobreposição de execuções se um ciclo anterior ainda estiver ativo.
 
 ### 11.3 Observabilidade
 Monitorar:
@@ -573,6 +585,24 @@ docker compose up -d --build
 ```
 
 Observações:
-- O container expõe a API em `8000`.
+- O serviço `jira-extractor-api` expõe a API em `8000`.
+- O serviço `jira-extractor-scheduler` executa as extrações em `08:00`, `11:00`, `14:00` e `17:00` no horário de Brasília.
 - Artefatos de saída são persistidos no volume `./output`.
+- O arquivo local `.env` é montado como `/app/.env` para que CLI e API leiam a mesma configuração.
+
+### 19.1 Deploy em Ubuntu Server
+No servidor:
+
+```bash
+cd /caminho/extract-from-jira
+docker compose up -d --build
+```
+
+Verificações úteis:
+
+```bash
+docker compose ps
+docker compose logs -f jira-extractor-scheduler
+docker compose logs -f jira-extractor-api
+```
 # extract-from-jira

@@ -192,6 +192,17 @@ Compose:
 docker compose up --build
 ```
 
+Scheduler em produção:
+- O serviço `jira-extractor-scheduler` roda no mesmo `docker compose`.
+- Agenda fixa: `08:00`, `11:00`, `14:00`, `17:00`.
+- Timezone: `America/Sao_Paulo`.
+
+Logs:
+```bash
+docker compose logs -f jira-extractor-scheduler
+docker compose logs -f jira-extractor-api
+```
+
 ## 14) Troubleshooting rapido
 ### `pyarrow` falha ao instalar
 - Confirme Python `3.12`/`3.13` (nao `3.14`).
@@ -212,4 +223,3 @@ poetry install --with dev
 - Ajuste `DB_SERVER` para host/IP sem instancia nomeada.
 - Defina `DB_PORT` explicito.
 - Verifique firewall/VPN/rota ate o servidor SQL.
-
